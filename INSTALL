@@ -1,0 +1,49 @@
+INSTALL
+=======
+
+Modify the Makefile to fit your system, especially the path to the Asterisk 
+include files.
+
+To build the driver you will need an installed CAPI system, including header 
+files.
+
+By default, an internal version of libcapi20 is used (you do not need libcapi20 to
+be installed on your system). If you do not want this and the installed libcapi20
+should be used, add the option
+  USE_OWN_LIBCAPI=no
+to the 'make' command.
+
+To build from/for other Asterisk sources (default is '/' where /usr/include/asterisk
+is expected), add option
+  INSTALL_PREFIX=<where your /usr/include/asterisk is>
+to 'make' command. This makes also sense when compiling for other targets or when
+cross compiling.
+
+
+To build the channel module:
+---------------------------------
+make
+
+For verbose compiling:
+---------------------------------
+make V=1
+
+
+To install:
+----------------
+make install
+
+
+To install a sample configuration:
+----------------------------------
+make install_config
+
+
+In /etc/asterisk/modules.conf insert the line:
+    load => chan_capi.so
+
+    and in the [global] section:
+    chan_capi.so=yes
+
+Don't forget a trailing newline at the end of modules.conf!
+

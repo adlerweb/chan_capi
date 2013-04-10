@@ -1,0 +1,129 @@
+chan_capi a Common ISDN API 2.0 implementation for Asterisk
+
+QSIG Extension for chan_capi
+
+ Copyright (C) 2005-2007 Cytronics & Melware
+ Armin Schindler <armin@melware.de>
+
+ Copyright (C) 2006-2007 Mario Goegel
+ Mario Goegel <m.goegel@gmx.de>
+
+This program is free software and may be modified and distributed under
+the terms of the GNU Public License. There is _NO_ warranty for this!
+
+Thanks go to the debuggers, bugfixers, and contributors :)
+===========================================================================
+None yet - you will be welcome here :-)
+
+(...and all the others that have been forgotten...) :-)
+
+No support for Asterisk 1.0.x any more, you need at least
+Asterisk 1.2.x , 1.4.x or 1.6.x.
+
+What is QSIG
+=============
+
+QSIG is a protocol extension for ISDN.
+It is mainly used on connecting PBXs of different PBX vendors, which allows 
+better interoperability.
+As example there can be a name of an extension transferred between different
+PBXs, which is not possibile with standard ISDN.
+
+These extensions will be transmitted as encoded facility information elements.
+To use QSIG with Asterisk, you willll need a card such as a Dialogic(R) Diva(R) 
+Media Board (BRI like PRI) that supports QSIG. Maybe others do also work, if so, let me now.
+
+The QSIG support includes:
+==========================
+
+- Name presentation on Call SETUP incoming like outgoing
+
+- ISDN LEG INFO2 field - a message that delivers information about call diversions on incoming calls to Asterisk
+    Data is stored in Asterisk variables:
+    QSIG_LI2_DIVREASON		Reason of divertion: 0 - unknown, 1 - unconditional, 2 - user busy, 3 - user no reply
+    QSIG_LI2_ODIVREASON		Reason of original divertion (like above)
+    QSIG_LI2_DIVCOUNT		divertion counter - how many divertions
+    QSIG_LI2_DIVNUM		diverting number
+    QSIG_LI2_ODIVNUM		original diverting number
+    QSIG_LI2_DIVNAME		diverting name
+    QSIG_LI2_ODIVNAME		original diverting name
+
+    at the moment only incoming handling is supported
+    
+- Possibility to inform QSIG switch about a call from the public network
+    If you set the variable QSIG_SETUP=X, then the QSIG switch on the other side will know, 
+    that this call source is the public network - you will get a different ring tone, etc.
+    In dialplan use:    Set(__QSIG_SETUP=X)  command.
+    The leading "__" tells Asterisk, to export this variable to the outgoing channel and
+    its subchannels
+    
+- Simple Call Transfer
+    With capicommand(qsig_ct,src-id,dst-id), you can transfer an inbound call back to the qsig switch.
+    The B-channel of this call will be relased, so that the line is free for a next call.
+    Unfortunately, the call will be completely released by the switch if the target is busy.
+    If you need to know whether your target is busy, you can use the call transfer feature below.
+    
+- Call Transfer (outgoing)
+    You can do an outbound call transfer.
+    First, you need the PLCI (logical channel ID) of your first channel. You can obtain it with capicommand(qsig_getplci). This 
+    command returns the channel ID in the variable QSIG_PLCI. Now, you can enable the call transfer feature.
+    Simply add "Ct<PLCI>" to QSIG_SETUP (i.e., QSIG_SETUP="X/Ct${QSIG_PLCI}" ). On the next dial command the call will 
+    be automatically transferred. The transfer occurs after the CONNECT. If you want a transfer early on ringing, you 
+    may use "Ctr<PLCI>". Then the target user will get the information about the originating user, while his phone is ringing.
+    
+    If the external switch offers an path replacement propose, it will be taken automatically in account.
+    The B-channels will be cleared by the switch after the call is conneced. Your channels stay free.
+    
+- Automatic Call Transfer and Path Replacement (if allowed/possible) on bridge/line interconnect
+    If a line interconnect is set up from Asterisk, chan_capi sends an Call Transfer facility out and waits for an
+    Path Replacement Propose message - if no Path Replacement is received, the line interconnect will proceed.
+    The Call Transfer allows your connected extensions in every case (if the switch supports the Call Transfer feature)
+    to see the name and number of its connected peer.
+    This should be configurable in the next release.
+
+- decoding of incoming Call Transfer feature
+    Enables inbound Path Replacement. If received, an automatic Path Replacement with Asterisk internal bridging will be fired.
+
+- Support for sending CalledName
+    If in the dialplan a variable CALLEDNAME was set, it will be sent out to the switch, while the Asterisk extension is ringing.
+
+- Support for sending ConnectedName
+    If in the dialplan a variable CONNECTEDNAME was set, it will be sent out to the switch AFTER connection is answered by asterisk
+    
+
+Future Targets:
+===============
+- check code for buffer overflows
+- complete path replacement features
+- Call Rerouting feature [ECMA-174]
+- CCBS
+- AOC
+- sendtext implementation (e.g., display instructions on the connected set)
+- ...
+
+How to use:
+===========
+
+You will find more documentation at the chan_capi wiki.
+
+Please visit:		http://www.melware.org/ChanCapiConf
+
+
+
+Simply enable QSIG with the following line in your capi.conf interface:
+
+Here we go with new configuration
+
+Set QSIG to one of the following values, which corresponds to your configuration.
+
+0	QSIG turned off
+1	Alcatel (4400 & Enterprise - Maybe OXO/4200) ECMA (wrongly named ECMA - it is ETSI) variant
+2	Siemens HiPath 4000 ECMAV2 & Alcatel 4400/Enterprise in ISO mode
+
+
+ToDo List:
+==========
+
+- Support for inbound rerouting
+- Enhance ASN1-97 Addressing Data Elements support - will save much code
+- Allow/Disallow Path Replacement within capi.conf  - partially done

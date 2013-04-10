@@ -1,0 +1,597 @@
+chan_capi a Common ISDN API 2.0 implementation for Asterisk
+
+ Copyright (C) 2005-2010 Cytronics & Melware
+ Armin Schindler <armin@melware.de>
+ 
+ Reworked, but based on the work of
+ Copyright (C) 2002-2005 Junghanns.NET GmbH
+ Klaus-Peter Junghanns <kpj@junghanns.net>
+
+This program is free software and may be modified and distributed under
+the terms of the GNU Public License. There is _NO_ warranty for this!
+
+Thanks go to the debuggers, bugfixers and contributors :)
+===========================================================================
+Lele Forzani <lele@windmill.it>
+Florian Overkamp <florian@obsimref.com>
+Gareth Watts <gareth@omnipotent.net>
+Jeff Noxon <jeff@planetfall.com>
+Petr Michalek <petr.michalek@aca.cz>
+Jan Stocker
+Frank Sautter, levigo group
+Hans Petter Selasky
+Simon Peter <dn.tlp@gmx.net>
+Mario Goegel <m.goegel@gmx.de>
+
+(...and all the others that have been forgotten...) :-)
+
+No support for Asterisk 1.0.x any more, you need at least
+Asterisk 1.2.x , 1.4.x or 1.6.x.
+
+Note:
+Eicon DIVA Server cards are now named Dialogic(R) Diva(R) Media Boards.
+
+This chan_capi version includes:
+=====================================================
+- Multiple controller support
+- CID,DNID (callling party, called party)
+- CLIR/CLIP
+- Supplementary services: CD (deflect/reroute),HOLD,RETRIEVE,ECT,3PTY
+- DTMF (dependend on card) + software DTMF support
+- Early B3 connects (always,success,never)
+- Digital audio (what did you think?)
+- Incoming/outgoing calls
+- Overlap sending (dialtone and additional digits)
+- E(xplicit) C(all) T(ransfer) (...although it's done implicit-but don't tell!)
+- Use asterisks internal DSP functions for DTMF
+- a-Law support 
+- u-Law support! 
+- Dialogic(R) Diva(R) software DSP echo cancellation (echocancel=1)
+- Reject call waiting (ACO)
+- DID for Point to Point mode (a.k.a overlap receiving)
+- Rx/Tx gains using positive linar value (rxgain=1.0, txgain=1.0 means no change) 
+- (Inter)national/subscriber dialing prefix (for callerid) configurable in capi.conf
+- CLI command "capi info" shows B channel status of chan_capi
+- Catch all MSN (incomingmsn=*)
+- Some configuration enhancements (msn=123,124,125)
+- Added accountcode= 
+- Echo squelching (echosquelch=1)
+- Callgroup support
+- report correct DIALSTATUS and HANGUPCAUSE.
+- Updated to support the new frame->delivery field
+- Compiles with different Asterisk versions (automatic build configuration)
+- receive/send faxes for CAPI (see below)
+- Fixes and compatibility for BSD (Jan Stocker and Hans Petter Selasky)
+- Support 'type of number'.
+- ISDN hold.
+- CAPI Line Interconnect.
+- CAPI VoIP/RTP
+- CLI command "capi show channels" shows details on channel status.
+- Asterisk 1.4 jitterbuffer configuration.
+- some QSIG extensions (see README.qsig)
+- CCBS (call completion on busy subscriber)
+- CAPI CHAT (CAPI MeetMe using onboard DSPs)
+- KEYPAD digits detection
+- provide DATE/TIME in NT-mode.
+
+
+The Dial string
+===============
+
+  Example:        Dial(CAPI/g<group>/[<callerid>:]<destination>[/<params>])
+  Or:             Dial(CAPI/contr<controller>/[<callerid>:]<destination>[/<params>])
+  Or:             Dial(CAPI/<interface-name>/[<callerid>:]<destination>[/<params>])
+
+  'group' can be a value, comma separated list of values or a range
+  using '-'. The according interface is found by searching a match with
+  the 'group' specified in the capi.conf for each interface.
+
+  The optional <callerid> followed by an ':' can be used to set a caller ID
+  for this dial() command, without changing the original channel's caller ID.
+
+  'params' is an optional part to set special settings for this call.
+  The string consists of a list of characters with the following meaning:
+   'b' : early B3 always.
+   'B' : early B3 on successful calls only.
+   'd' : use the default caller ID that is set by defaultcid= in capi.conf
+   'o' : use overlap sending of number.
+         (Useful if additional digits should be send afterwards or together
+          with 'b' to get the dialtone and then send the number, e.g., if 
+          no progress tones are available)
+   'c' : do not send sending complete
+   's' : activate 'stay-online': do not disconnect CAPI connection on hangup.
+         This is needed to give additional commands like CCBS after hangup.
+         To really hang up the CAPI connection, use either capicommand(hangup)
+         or wait for chan_capi/network timeout (about 20 seconds).
+   'G' : early Line-Interconnect / bridge: Use Line-Interconnect as soon as
+         both B-channels are up. Both channels must be of type the CAPI and
+         the incoming call may need 'capicommand(progress)' to enable Early B3
+         on it as well as the dial option 'b' for the outgoing channel.
+         Before Dial(), the capicommand(peerlink) must be used to signal the
+         dialed channel its peer.
+
+  If the <interface-name> is used in dialstring, be sure the name (specified
+  in capi.conf) does not start with 'contr' or 'g'.
+
+  CLIP/CLIR uses the calling presentation of the calling channel, which can
+  be modified using the SetCallerPres() application. Use
+  SetCallerPres(prohib_not_screened) for CLIR. That is why the msn= param in
+  capi.conf has been removed. The callerID is also taken from the calling channel.
+
+
+CLI commands
+============
+
+capi info:
+    Show chan_capi version info.
+    Show status of available B-channels.
+
+capi debug:
+    Enable CAPI message verbosity.
+
+capi no debug:
+    Disable CAPI message verbosity.
+
+capi show channels:
+    Display detailed information on CAPI B-channels.
+    (Description see below)
+
+capi chatinfo:
+    Show status of CAPI CHAT.
+
+capi ifcstate:
+    Show state of interfaces. (Diva only, chan_capi
+    compiled with 'make DIVA_STATUS=1')
+
+capi show resources:
+    Show resources in use.
+
+capi exec:
+    'capi exec CHANNEL command,parameter1,parameter2,....,parameterN'
+    Exec capicommand 'command' for selected channel.
+
+CAPI command application
+========================================
+chan_capi provides an additional Asterisk application
+   capicommand()
+With this application, special CAPI commands and features can be used.
+
+Call Deflection:
+    Forwards an unanswered call to another number.
+        Example:
+        exten => s,1,capicommand(deflect,12345678)
+  
+Fax receive:
+    Receives a fax using CAPI.
+        Example:
+        exten => s,1,capicommand(receivefax,/tmp/${UNIQUEID},+49 6137 555123,Asterisk,kX)
+	(more see below)
+
+Fax send:
+    Sends a fax using CAPI.
+        Example:
+        exten => s,1,capicommand(sendfax,/path/to/faxfile.sff,+49 6137 555123,Asterisk)
+	(more see below)
+
+Enable/Disable echosquelch:
+    Enables or disable a very primitive echo suppressor.
+    Disable this option before you start recording voicemail or your files may get choppy.
+        Example:
+        exten => s,1,capicommand(echosquelch,yes)
+          or
+        exten => s,1,capicommand(echosquelch,no)
+
+Enable/Disable echocancel:
+    Enables or disables echo-cancel provided by CAPI driver/hardware.
+    You might need to disable echo-cancel when the data/fax transmission is handled
+    by a non-CAPI application. After hangup, this setting is restored to the value
+    set in capi.conf.
+        Example:
+        exten => s,1,capicommand(echocancel,yes)
+          or
+        exten => s,1,capicommand(echocancel,no)
+
+    By default chan_capi deactivates echo-cancel for transit connections
+    (Dial command called from existing call). You can use 'econtransitconn'
+    configurations parameter (capi.conf) to change this behavior:
+    econtransitconn=0 ; Deactivate EC on transit connections
+    econtransitconn=1 ; Deactivate EC on secondary call of transit connection only
+    econtransitconn=2 ; Deactivate EC on primary call of transit connection only
+    econtransitconn=3 ; Do not deactivate EC on transit connections
+
+Send Keypad Facility:
+    Send Keypad Faciliaty information.
+        Example:
+        exten => s,1,capicommand(keypad,<digits>)
+
+Malicious Call Identification:
+    Reports a call of malicious nature.
+        Example:
+        exten => s,1,capicommand(malicious)
+
+Hold:
+    Puts an answered call on hold, this has nothing to do with Asterisk's onhold
+    (music et al).
+    An optional parameter is the name of the variable, which should be set with
+    the reference ID of the call on hold.
+        Example:
+        exten => s,1,capicommand(hold)
+         or
+        exten => s,1,capicommand(hold,MYHOLDVAR)
+
+Holdtype:
+    Sets the type of 'hold'. When Asterisk wants to put the call on hold, the specified method
+    will be used.
+        Example:
+        exten => s,1,capicommand(holdtype,local)  ;no hold, Asterisk can play MOH
+         or
+        exten => s,1,capicommand(holdtype,hold)   ;ISDN-HOLD 
+         or
+        ; not yet implemented
+        exten => s,1,capicommand(holdtype,notify) ;notify the peer only, Asterisk can play MOH
+
+       
+Retrieve:
+    Gets back the holded call. An optional parameter is the reference ID of the call
+    on hold.
+        Example:
+        exten => s,1,capicommand(retrieve)
+         or
+        exten => s,1,capicommand(retrieve,${MYHOLDVAR})
+
+ECT:
+    Explicit Call Transfer of the call on hold (must put call on hold first!)
+        Example:
+        exten => s,1,capicommand(ect,${MYHOLDVAR})
+         or
+        [macro-capiect]
+        exten => s,1,capicommand(ect)
+        [default]
+        exten => s,1,capicommand(hold)
+        exten => s,2,Wait(1)
+        exten => s,3,Dial(CAPI/contr1/1234,60,M(capiect))
+    Note: Normaly a PBX needs 'implicit call transfer', which is done by default
+    with this command. But if the line needs real 'explicit call transfer', use
+        exten => s,1,capicommand(ect,x)
+    instead.
+
+3PTY:
+    Initiates a Three-Party Conference (must have one call on hold and one active call!).
+        Example:
+        exten => s,1,capicommand(3pty_begin,${MYHOLDVAR})
+         or
+        [macro-capi3pty]
+        exten => s,1,capicommand(3pty_begin)
+        [default]
+        exten => s,1,capicommand(hold)
+        exten => s,2,Dial(CAPI/contr1/1234,,M(capi3pty))
+
+Peer link creation:
+    Creates a reference for chan_capi to know who is the calling channel on Dial().
+    This is needed if you want to use CCBS/CCNR afterwards.
+        Example:
+        exten => s,1,capicommand(peerlink)
+
+Hangup in mode 'stay-online':
+    After hangup in 'stay-online' mode, the line is not really disconnected
+    until timeout or command:
+        exten => s,1,capicommand(hangup)
+    This works after capicommand(peerlink) only.
+
+Set local party to 'busy' or 'free':
+    Sets the local phone to the status 'busy' or 'free' when
+    awaiting a callback for CCBS/CCNR. If the network wants to
+    call you back for CCBS/CCNR, chan_capi normaly does not know
+    about the status of the extension who started the callback.
+    By default, chan_capi assumes 'free', but you can change that
+    with:
+        exten => s,1,capicommand(ccpartybusy,${CCLINKAGEID},yes)
+    or 
+        exten => s,1,capicommand(ccpartybusy,${CCLINKAGEID},no)
+
+Call completion on subscriber busy (CCBS):
+    To receive a callback when the dialed and busy party becomes free, aka
+    call completion on subscriber busy, you can do the following:
+        Example:
+        exten => s,1,capicommand(peerlink)  ;to let chan_capi know who is the calling channel.
+        exten => s,2,Dial(CAPI/contr1/123456,60,g)  ;'g' to go-on with the dialplan on busy.
+        exten => s,3,NoOp(${CCLINKAGEID})  ;if this variable now contains a number, CCBS is possible.
+            ;here you can ask the caller if CCBS shall be activated...
+        exten => s,4,capicommand(ccbs,${CCLINKAGEID},<context>,<exten>,<priority>)
+        exten => s,5,NoOp(${CCBSSTATUS})  ;if CCBS was successfully enabled, it is set to "ACTIVATED".
+    If the remote party becomes 'non-busy', the network initiates the callback that will be
+    sent to the provided context/exten/priority. Of course, this only happens if your local
+    phone is set to 'free' with capicommand(ccpartybusy), which is the default.
+    In this context/exten/priority you should just setup a callfile to initiate an outgoing
+    call from your extension to
+        exten => s,1,Dial(CAPI/ccbs/${CCLINKAGEID}/)
+
+Deactivate CCBS:
+    To deactivate a previously activated CCBS, use the following command:
+        Example:
+        exten => s,1,capicommand(ccbsstop,${CCLINKAGEID})
+
+Chat (MeetMe/Conference):
+    See also README.media for details!
+    If the CAPI card/driver supports it, the caller can be put into a chat-room:
+    (This uses the DSPs onboard a Dialogic(R) Diva(R) Rev.2 Media Board.)
+        exten => s,1,capicommand(chat,<roomname>,<options>,controller)
+		Example:
+            exten => s,1,capicommand(chat,salesmeeting,m,1,3-6)
+    Possible options:
+    'm' = The first caller will get music-on-hold until second caller arrives.
+    'h<sec>' = Hangup after <sec> seconds if caller is alone in conference.
+    'o' = The caller is operator
+    'l' = The caller is listener
+
+Progress / Early-B3 on incoming calls:
+    Activate Early-B3 on incoming channels to signal progress tones
+    when in NT-mode or if the Telco-line supports this.
+        Example:
+        exten => s,1,capicommand(progress)
+
+Get CAPI application ID:
+    To store the CAPI application ID in an Asterisk dialplan variable, use:
+        Example:
+            exten => s,1,capicommand(getid,CAPI_ID)
+            exten => s,2,NoOp(CAPI appl-id is ${CAPI_ID})
+
+Using CLIR
+==========
+Use the SetCallerPres() application before you dial:
+	exten => _X.,1,SetCallerPres(prohib_not_screened)
+	exten => _X.,2,Dial(CAPI/contr1/${EXTEN})
+
+
+Enjoying Early B3 connects (inband call progress, tones and announcements)
+==========================================================================
+Early B3 is configurable in the dialstring parameters.
+If you set a 'b', early B3 will always be used, also if the call fails,
+because the number is unprovisioned, etc ...
+If you set a 'B', early B3 will only be used on successful calls, 
+giving you ring indication,etc...
+
+Do not use indications in the Dial command, your local exchange will do that for 
+you:
+	exten => _X.,1,Dial(CAPI/contr1/${EXTEN}/B,30)		
+		(early B3 on success)
+	
+	exten => _X.,1,Dial(CAPI/contr1/${EXTEN}/b,30)	
+		(always early B3)
+	
+	exten => _X.,1,Dial(CAPI/contr1/${EXTEN},30,r)		
+		(no early B3, fake ring indication)
+
+	exten => _X.,1,Dial(CAPI/contr1/${EXTEN}/b,30,r)		
+		(always early B3, fake indicatons if the exchange does not give us 
+		indications)
+	
+	exten => _X.,1,Dial(CAPI/contr1/${EXTEN}/B,30,r)		
+		(early B3 on success, fake indicatons if the exchange does not give us 
+		indications)
+    
+For normal PBX usage, you would use the "b" option, always Early B3.
+
+
+Overlap sending (a.k.a. real dialtone)
+======================================
+When you dial an empty number and have early B3 enabled, with:
+    Dial(CAPI/g1//b)
+the channel will come up at once and give you the dialtone it gets from the 
+local exchange.
+At this point the channel is like a legacy phone, now you can send DTMF digits 
+to dial.    
+
+
+Example context for incoming calls on MSN 12345678:
+===================================================
+
+[capi-in]
+exten => 12345678,1,Dial(SIP/phone1)
+exten => 12345678,2,Hangup
+
+
+Short HOWTO of capicommand(receivefax...) and capicommand(sendfax...):
+========================================================================================
+For those of you who have a CAPI card with an on-board DSP (like Dialogic(R) Diva(R) Media Boards),
+this allows you to receive/send faxes.
+
+capicommand(receivefax,<filename>[,<stationid>,<headline>,<options>]):
+-------------------------------------------------------------------------
+If you want to answer a channel in fax mode, use capicommand(receivefax,...)
+instead of Answer(). If you use Answer(), you will be in voice mode. 
+If the hardware DSP detects fax tone, you can switch from voice to fax mode 
+by calling capicommand(receivefax,...).
+The parameter <filename> is mandatory and the parameters <stationid>,
+<headline> and <options> are optional.
+By default, if fax reception was not successful, the file is deleted. If you want even
+partly received or broken fax files, use 'k' for "keep bad fax" in the <options>:
+  capicommand(receivefax,/tmp/${UNIQUEID},+123456789,,k)
+You can activate extended fax support by 'X' in the <options>:
+  capicommand(receivefax,/tmp/${UNIQUEID},+123456789,X)
+Please read details on extended fax options in README.Diva.fax.
+
+To enable fax tone detection and redirect to extension 'fax', use config variable
+'faxdetect' in capi.conf. This can be limited to the first 'n' seconds of a connection
+using the setting 'faxdetecttime' in capi.conf.
+
+Example of use :
+line number 123, play something, if a fax tone is detected, handle it
+line number 124, answer directly in fax mode
+
+[incoming]
+exten => 123,1,Answer()
+exten => 123,2,BackGround(jpop)
+exten => 124,1,Goto(handle_fax,s,1)
+exten => fax,1,Goto(handle_fax,s,1)
+
+[handle_fax]
+exten => s,1,capicommand(receivefax,/tmp/${UNIQUEID}[,<stationid>,<headline>,<options>])
+exten => s,2,Hangup()
+exten => h,1,deadagi,fax.php // Run sfftobmp and mail it.
+
+The output of capicommand(receivefax,...) is a SFF file.
+Use sfftobmp to convert it.
+With a Dialogic(R) Diva(R) Media Board, the following features are provided:
+ - fax up to 33600
+ - high resolution
+ - Color Fax 
+ - JPEG Compression is disabled (not tested yet)
+See README.Diva.fax for more details and description of all options.
+
+capicommand(sendfax,<filename>[,<stationid>,<headline>,<options>]):
+------------------------------------------------------------
+To send a fax, you can use the same mechanism like with receivefax.
+Just replace the <filename> with the path to the .SFF file to send.
+You can activate extended fax support by 'X' in the <options>:
+  capicommand(sendfax,/tmp/${UNIQUEID},+123456789,,X)
+Please read details on extended fax options in README.Diva.fax.
+
+After disconnect of a fax connection, the following variables
+will be set for that channel:
+FAXSTATUS     : 0 = OK, 1 = Error.
+FAXREASON     : Value of B3 disconnect reason.
+FAXREASONTEXT : Decoded text of FAXREASON value.
+FAXRATE       : The baud rate of the fax connection.
+FAXRESOLUTION : 0 = standard, 1 = high.
+FAXFORMAT     : 0 = SFF.
+FAXPAGES      : Number of pages received.
+FAXID         : The ID of the remote fax maschine.
+
+KEYPAD digits in NT-mode
+========================
+If the device connected to a NT-mode port sends KEYPAD digits
+instead of normal digits, this call is then send to extension
+'Kxxx'. Where 'xxx' stands for the KEYPAD digits sent.
+
+CLI command "capi show channels"
+==============================================
+This CLI command shows detailed info on all CAPI channels.
+Column description:
+  Line-Name : the name of the interface as defined in capi.conf
+  NTmode    : is the line in NT-mode instead fo TE-mode
+  state     : the state of the channel, like 'Conn', 'Disc', 'Dial', ...
+  i/o       : incoming or outgoing line
+  bproto    : protocol on CAPI ('fax', 'trans' or 'rtp')
+  isdnstate : a string which may consists of the following characters
+              * = PBX is active
+              G = Line-Interconnect (CAPI bridge) active
+              B = B-channel is up
+              b = B-channel is requested
+              P = Progress was signaled
+              H = this line is on hold
+              T = this line is in transfer (ECT) mode
+              S = SETUP[_ACK] was signaled
+  ton       : type of number value
+  number    : the caller number and destination number
+
+
+Asterisk variables used/set by chan_capi
+==========================================================
+
+BCHANNELINFO
+    On incomming calls, this variable is set with the B-channel information value:
+     '0' : B-channel is used (default)
+     '1' : D-channel is used (not implemented yet)
+     '2' : neither B nor D-channel is used (e.g., call waiting)
+    Call-Waiting: an incoming call with BCHANNELINFO not '0' cannot be accepted.
+    Another connection must be dropped before accepting or use
+    capicommand(deflect,<number>) to initiate call deflection to another destination.
+
+CALLEDTON
+    Incoming calls: 'type of number' value of the called number is saved in this variable on
+    incomming call.
+    Outgoing calls: Allows to specity the 'ETS 300 102-1' called party number octet 3
+                    (0x80 is used by default)
+
+    exten => _X.,1,Answer
+    exten => _X.,n,Set(_CALLEDTON=${CALLEDTON}) ; Use value of incoming call for outgoing call
+    exten => _X.,n,Dial(CAPI/ISDN3/100,10)
+
+    exten => _X.,1,Answer
+    exten => _X.,n,Set(_CALLEDTON=1) ; Use new value
+    exten => _X.,n,Dial(CAPI/ISDN3/100,10)
+
+
+CALLERTON
+    The 'type of number' value to overwrite for the caller number on outgoing call.
+
+_CALLERHOLDID
+    If a call is put on hold (ISDN-HOLD), the reference ID is saved in this variable.
+    This variable is inherited as CALLERHOLDID to the dialed channel and will be used
+    if e.g., capicommand(ect) is used to transfer the held call.
+
+CALLINGSUBADDRESS
+    If set on dial(), the calling subaddress will be set to the content.
+
+CALLEDSUBADDRESS
+    If set on dial(), the called subaddress will be set to the content.
+
+CAPI_CIP
+    The real CIP value, not the transformed 'transfercapability'.
+    Set on incoming call automatically. If set on outgoing call, it is used
+    instead of transfercapability.
+
+CCBSSTATUS
+    When using capicommand(ccbs,....), this variable is set to either "ERROR" or
+    "ACTIVATED".
+
+CCLINKAGEID
+    If a Call-Linkage-Id is received for CCBS/CCNR, this variable contains this ID.
+    But you need to use capicommand(peerlink) before dialing a CAPI channel, because
+    of a design problem in Asterisk, chan_capi is not able to set channel variables
+    of the calling channel.
+
+CONNECTEDNUMBER
+    Can be set before answering and if set, the content is used for
+    IE 'Connected Number' on answering.
+
+DISCONNECT_IND_REASON
+    When CAPI reports DISCONNECT_IND, some CAPI reason codes are not set
+    in HANGUPCAUSE, because they are not valid cause codes. To also
+    get those CAPI reason codes, you can check this variable on hangup.
+    This is e.g. useful for reason 0x3301, which tells that the ISDN
+	connection is physically broken (cable).
+
+FAXEXTEN
+    If chan_capi sends the call to configured fax extension, the original extension number
+    is saved in this variable.
+
+PRI_CAUSE
+    If set, this value will be used as hangup cause on hangup.
+
+REDIRECTINGNUMBER
+    On incoming calls, if the call was redirected to you by someone, the
+    number of the redirecting party is saved in this variable.
+    RDNIS is set as well.
+
+REDIRECTREASON
+    If the incoming call was redirected to you, this variable is set
+    with the reason value.
+
+REDIRECTIONNUMBER
+    If an outgoing call is redirected, this variable may be set to the
+    new destination.
+
+ISDNPI1 and ISDNPI2
+    The two values of the information element PI (Progress Indicator).
+
+Asterisk outgoing calls
+==========================================================
+
+Distribution of outgoing calls is controlled by two
+configuration variables (capi.conf, controller specific).
+
+hlimit - Number of reserved channels. If number of free
+         channels is below the one specified by 'hlimit' value then
+         no new outgoing calls are delivered to this controller.
+
+slimit - If value is set for multiple belonging to same dialout group
+         controllers then the outgoing calls are distributd as follows:
+         Calls are delivered to the controller with smalest (in group)
+         number and the amount of free channels bigger then or equal to
+         one speciefied by 'slimit'. After amount of free channels for all
+         included in the group controllers is decreased below one specified
+         by 'slimit' value calls are distributed in rount robin fashion
+         between all (in group) controllers.
+

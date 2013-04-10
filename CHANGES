@@ -1,0 +1,323 @@
+CHANGES
+=======
+
+HEAD
+------------------
+- refuse to reload on active channels
+- ast_devstate_changed() changes with new cache argument
+
+
+chan_capi-1.1.6
+------------------
+- Asterisk 1.8 changes
+- added dialplan variables ISDNPI1 and ISDNPI2
+- Support for 'divastreaming' available (Diva 4PRI PCI, Diva 2PRI PCI,
+  Diva 4PRI HS PCIe, Diva 2PRI HS PCIe, Diva 1PRI HS PCIe,
+  Diva 8PRI PCIe FS, Diva 4PRI PCIe FS)
+- Fixed memory leak in chat_play if using with 's' option
+- Add 'econtransitconn' configurations parameter. Allows to preserve
+  EC for transit connections
+- added variable DISCONNECT_IND_REASON to get real reason code from CAPI
+- added capicommand(keypad)
+- added log of FACILITY_IND for call deflect suplementary service
+- malloc,strdup,free -> ast_(malloc,strdup,free)
+- Use Diva streaming for NULL PLCI and for resource PLCI
+- Resolved http://www.ipphoneforum.eu/showthread.php?t=220051
+- Use Diva QSIG CAPI extensions for processing of Calling Party Name
+- Add Slinear
+- Add HD voice using G.722, Siren7, Siren14 and Slinear16
+- added faxdestination= to capi.conf to configure custom context,exten,prio.
+- allow capicommand option separator "|" and ",".
+- Add MWI server
+- Add MWI client
+- Improved call distribution algorithm for outgoing calls
+- Add 'capi ifcstate', 'capi exec', 'capi show resources' and
+  'chat manage remove' CLI commands
+- Add AMI 'Capichat[List,Mute,Unmute,Remove]' and 'CapiCommand' actions and
+  Capichat[List,ListComplete,Join,Leave,End] events
+- Add device state events for char rooms (capichat:[roomname]) and for
+  interface state (ISDN/I[N]/congestion)
+- Add access to Diva trace driver
+
+chan_capi-1.1.5
+------------------
+- corrected check for Info value on CONNECT_B3_CONF
+- fixed NULL-pointer in cid_name (asterisk 1.6 pickup revealed this)
+- changed action on prodding in .write function to ignore it
+- API adaptions to new asterisk trunk
+
+chan_capi-1.1.4
+------------------
+- use extended fax if available only and have fine resolution on receive activated by default
+- fixed chat error on creating third chat-room
+
+chan_capi-1.1.3
+------------------
+- fixed buffer length error with internal libcapi debug code.
+- performance optimizations, use debug code when needed only.
+- added commands for media features supported by Dialogic(R) Diva(R) Media Boards
+- added variable CAPI_CIP for full access to all bearer capabilities.
+- fixed CAPI 'chat' for using more than 8 controllers.
+- fixed CAPI 'chat' for not exceeding maximal size of CAPI message
+- add color fax
+- add autodetection of fax file format for sendfax command (SFF, CFF JPEG, CFF T.43, TEXT)
+- add extension for FAX paper formats and resolutions
+- adjust NULL PLCI LI path
+- add resource PLCI
+- add echocancelpath configuration option
+- fixed possible race condition while waiting for DISCONNECT_CONF
+- add static half duplex conference
+- add dynamic half duplex conference
+- add clear channel fax
+- add DTMF detection for NULL PLCI
+- use direct access to vocoders without RTP framing
+- play message to conference and music on hold to caller
+- add commands to remove users from chat
+- allow to specity the 'ETS 300 102-1' called party number octet 3
+- fixed possible buffer overflow in 'deflect'
+- added 'h' option to chat to auto-hangup caller if alone in conference too long
+
+
+chan_capi-1.1.2
+------------------
+- added config setting 'faxdetecttime' to limit the fax detection for a given amount of seconds.
+- added config option for subscriber prefix. Some lines may show local calls without area code
+  signaled as subscriber-number. Here the complete prefix including area code must be added.
+- better counting of active B-channels.
+- make capicommand(progress) "early-B3" usable for non NT-mode incoming channels as well.
+- support early Line-Interconnect (bridge) as soon as both B-channels are up. This bridges B-channels
+  from beginning of the call-establishment, even before calls are connected and the bridge command is received.
+  The dial() option 'G' is used to activate this feature.
+- fixed big-endian issue for DATA_B3 messages in internal libcapi code.
+- fixed NULL-pointer when no digits are signaled in DID mode.
+- adapt to new Asterisk 1.6.1 changes.
+- added capicommand to set CAPI application ID into an Asterisk dialplan variable.
+
+
+chan_capi-1.1.1
+------------------
+- fixed controller count when creating NULL-PLCI interface.
+- simplified check for unused controller.
+
+
+chan_capi-1.1.0
+------------------
+- send local DATE/TIME with CONNECT when in NT-mode.
+- added transfergroup config option to set controllers allowed for transfer.
+- send Sending-Complete if overlap dialing is not used.
+- fixed numberingplan for 'connected number'.
+- added devicestate option.
+- capi-chat can play music-on-hold for first caller.
+- adapt to new asterisk 1.6 API
+- fixed reading capi profile on big-endian
+- increased maximum number of CAPI controllers to 64 (needed for big PBX).
+- if immediate=yes is set in DID mode, accept calls to empty DNID (needed for Austrian lines).
+- use own libcapi20 implementation by default (no library for CAPI is needed any more).
+
+chan_capi-1.0.2
+------------------
+- possibly fixed ECT channel hang
+- added 'x' option to capicommand(ect) to have real 'explicit call transfer'
+  (needed by some ISDN lines)
+- support CCBS (call completion on busy subscriber)
+- added capicommand(chat) for CAPI-based MeetMe/Conference using onboard DSPs.
+- fixed ton-display in 'show capi channels' on outgoing line.
+- fix for 64bit support
+- Asterisk 1.4.4 adaptions
+- send 'In-band info available' for progress in NT-mode
+- detect KEYPAD digits in NT-mode and send call to 'K...' extension
+- fixed possible deadlock when answering a just disconnected call
+
+
+chan_capi-1.0.1
+------------------
+- added qsig caller-name patch by Mario Goegel
+- recognize asterisk 1.4.1
+- register at CAPI with needed maxLogicalConnections only
+- do not send SELECT_B_PROTOCOL more than once
+- do not send more DATA_B3 messages than allowed by CAPI_MAX_B3_BLOCKS
+- added 'k' option to capi receivefax command for not deleting bad faxes
+- added B-channel number to channel name for better identification
+- added variable setting REDIRECTIONNUMBER on outgoing call
+- fixed deadlock with ast_async_goto on fax tone detection
+- listen to CAPI supplementary information
+QSIG:
+ - added support for different qsig variants
+ - added support for rerouting informations on incoming calls
+ - added implementation of Simple Call Transfer
+
+chan_capi-1.0.0
+------------------
+- Added preliminary handling of MANUFACTURER_IND.
+- Check for fax connection when in receivefax mode before writing data
+  to file.
+- Try to detect for generic jitter buffer patch
+- Adapted to new Asterisk version 1.4 (Bug PR#20)
+- Adapted to new ast_channel_alloc from asterisk trunk.
+- Make capicommand(echocancel) setting non-permanent.
+  Setting is restored after hangup.
+- Better check for asterisk version 1.4 BUG#23
+- Added information and changed example for tx/rx gains.
+- Read the channel frames during wait for fax finish.
+- Added progress when in faxmode to wakeup asterisk-1.2.
+  (needed for e.g. auto-hangup on timeout)
+- Do not error on invalid controller in capi.conf, just ignore it.
+- Added 3PTY patch by Simon Peter.
+- Allow echo-cancel even with old CAPI configuration bit for
+  echo-cancel.
+- Fix compiler warnings.
+- Fixed callerid on incoming call with Asterisk 1.4 (PR#25)
+- Remove possible race condition in with hangup and DISCONNECT_IND.
+- Rixed gain and echosquelch use according to transfercapability.
+- Do not wait for DISCONNECT_B3_CONF in activehangup.
+- Reset PLCI on DISCONNECT_IND to avoid race if asterisk is too slow
+  with hangup command.
+- Added Asterisk 1.4 jitterbuffer usage.
+- Fixed compiler warning with Asterisk 1.4.0
+- Added music-on-hold on HOLD request for Asterisk 1.4
+
+chan_capi-0.7.1
+------------------
+- Set FAXREASONTEXT to "OK" instead of empty string.
+- Disconnect reason 0x3400 is treated as 'successful' in faxmode.
+- use CIP speech as default if transfercapability is unkown.
+- set correct channel/cdr status in fax mode too.
+- Use correct interface to wait on for ECT facility.
+
+chan_capi-0.7.0
+------------------
+- added amaflags
+- added pickupgroup (internal pickup with pickupexten)
+- added capicommand(sendfax)
+- dropped compatiblity to versions before Asterisk-1.2.0
+- added capicommand(echocancel)
+- added CAPI RTP (Eicon DIVA Server cards can do that)
+- added new cli 'capi show channels'
+- a lot of fixes
+
+chan_capi-cm-0.6.5
+------------------
+- fixed compilation with Asterisk 1.0.7
+- fixed call deflect if number is longer
+- removed function VANITYNUMBER, this does not belong into channel drivers
+
+chan_capi-cm-0.6.4
+------------------
+- do not do echo-squelch or gain if transfercapability is non-voice
+- fix deadlock when changing to fax mode
+- better capi message handling
+- removed double memset to zero
+- use safer copy_string function
+- removed unneeded lockB3q
+- avoid capi message number zero
+- added locking rules
+- fix ECT (use implicit ECT)
+- fixed setting language for each interface
+- fix wait for b-channel to go down on ECT.
+
+chan_capi-cm-0.6.3
+------------------
+- fixed buffer overflow in overlap dial
+- remove some compiler warnings
+
+chan_capi-cm-0.6.2
+------------------
+- set some info variables when receiving fax
+- added language support
+- prepared devicestate(hint) support
+- do not change early-B3 setting on conf error for CONNECT_B3
+- small fixes in Makefile targets (thanks to Karsten Keil)
+- do not send audio to local exchange when in TE-mode.
+- fix missing CONF messages when no interface is found
+- small transfercap and overlapdial fix
+- do not forward DTMF if in NT-mode and the line is not yet connected
+- fixed line interconnect
+- B-channel handling better
+- NT-mode progress
+- removed deadlock in faxreceive.
+- initialize variable ocid
+- correct use of timeoutms in native bridge
+- use more common defines for mutex_lock/unlock and _log()
+- clean up and OpenPBX portability.
+- adapted to latest asterisk bridge function prototype.
+
+chan_capi-cm-0.6.1
+------------------
+- fixed setting of redirecting number rdnis instead of cid.
+- allow setting a callerid in the dial() command without changing
+  the original channel callerid.
+- added config 'defaultcid' to set a default caller id which will be
+  used if dial option 'd' is specified.
+- moved ast_softhangup() out of interface lock
+- use correct mutex_init call for interface lock
+- when 'o' option is used for overlap dialing, do not send any digits
+  with the CONNECT_REQ. This gives better progress together with 'b'.
+- create a pseudo channel for each interface for incoming signalling
+  without B-channel.
+- added channel locks
+- fixed CAPI init order (thanks to Hans Petter Selasky)
+- fixed DID handling
+- set RDNIS if redirecting number was received.
+- simplified call to ast_exists_extension()
+- when check for valid extension, check the callerid as well
+- changed call-waiting and deflect handling in CONNECT_IND
+- use 'immediate' config in MSN mode, if PBX shall be started on
+  CONNECT_IND and shall not wait until SETUP/SENDING-COMPLETE was received.
+  Since info like REDIRECTINGNUMBER will come after CONNECT_IND, this may
+  be lost then. But for some drivers/telcos/pbx, this setting is needed.
+- fix start of line interconnect in old mode.
+- start early-b3 on PROCEEDING too.
+- do not send audio data, if in fax receive mode
+- disconnect on finished fax immediately
+- do not run through gain list, if gain is 1.0.
+- use correct A-law idle value.
+- removed old example from capi.conf
+
+chan_capi-cm-0.6
+----------------
+- added 'relaxdtmf'.
+- more BSD compatibility
+- correct PROGRESS handling
+- start PBX on SETUP/SENDING-COMPLETE for PtP only.
+- added verbose text for capi info/reason error messages.
+- fixed echo-cancel setup structure
+- use correct facility-selector for echo-cancel
+- use capi.conf option 'echocancelold' for old facility-selector (6)
+- changed isdnmode configuration from ptp/ptmp to msn/did
+- added ntmode configuration
+- added application capicommand() for CAPI based applications
+  (removed standalone applications)
+- capicommand(RETRIEVE) can now be called from other channels
+- support ISDN hold (holdtype in capi.conf)
+- added HOLD/RETRIEVE for Asterisk indications.
+- added custom function VANITYNUMBER to convert letters into digits.
+- added CAPI Line Interconnect (native bridging)
+- use variable CONNECTEDNUMBER on Answer().
+- set variable REDIRECTINGNUMBER on incomming call if it was diverted.
+- added variable REDIRECTREASON
+- fixed unload
+- removed obsolete thread mutex
+- fixed dnid/exten/immediate handling on PtP.
+- receive a fax via CAPI is now done with capicommand(receivefax|...) and added stationid...
+- fixed call-deflection and moved this feature from separate application
+  to capicommand().
+- added config option 'immediate' to start PBX if no dnid has been received yet.
+- endian fixes
+- compile fixes with newer Asterisk
+- update channel name on did changes.
+- support 'type of number' (numbering-plan).
+- u-Law setting is now done in capi.conf instead of Makefile define.
+- allow using interface name in Dial().
+- on hangup, use hangupcause from other channel or from var PRI_CAUSE.
+- improved DID handling on PtP connections.
+- capi.conf structure changes: one own section for each interface,
+  no global 'interfaces' any more. Section name will be interface name.
+- restructured module loading and init.
+- dial string changed: parameters like 'b' not as part of number any more.
+- send alert on alerting only (busy() and congestion() work now).
+- better overlap sending (new parameter 'o' for dialstring to
+  send only the first two digits with CONNECT_REQ only, the remaining
+  digits and even digits following the dial() command, will be send
+  as INFO_REQ/Overlap).
+- further fixups
+

@@ -1,0 +1,74 @@
++===================================================================+
+|      HD Audio (Hight Definition Audio)                            |
++===================================================================+
+
++-------------------------------------------------------------------+
+|  Supported HD Audio vocoders                                      |
++-------------------------------------------------------------------+
+
+Diva provides support for following HD Audio vocoders:
+
+g722, ssiren7 siren14 and slin16
+
++-------------------------------------------------------------------+
+|  Supported Diva Hardware                                          |
++-------------------------------------------------------------------+
+
+HD Audio support is provided by:
+Diva 4PRI PCI
+Diva 2PRI PCI
+Diva 4PRI PCIe HS
+Diva 2PRI PCIe HS
+Diva 1PRI PCIe HS
+Diva 8PRI PCIe FS 4LANE
+Diva 4PRI PCIe FS 4LANE
+
++-------------------------------------------------------------------+
+|  HD Audio over ISDN support                                       |
++-------------------------------------------------------------------+
+
+To activate support for HD Audio please allow all or one of HD Audio
+codecs for one or more CAPI controllers. You can do it by Diva WEB
+configuration or by edit of 'capi.conf'.
+
+Diva hardware will use BC/HLC/LLC method to agree on HD Audio
+format with opposite side. In addition Diva hardware will
+perform analysis of B-channel data to determine if HD Audio
+format is signaled in band.
+
+Dependent on this procedire Diva will use HD Audio format
+or change to G.711 if HD Audio is not supported by opposite side.
+
+Diva hardware will always convert media to one requested by chan_capi format.
+Following conversions are performed automatically:
+
+G.711    <-> HD Audio in case chan_capi uses HD Audio but opposite side not
+HD Audio <-> G.711/GSM/... in case opposite side uses HD Audio but
+             chan_capi uses other codec
+
+Examples of HD Audio operation:
+
+G.722 <-> SLINEAR16
+G.722 <-> siren14
+G.722 <-> siren7
+G.722 <-> G.722
+
+Using  automatic convertion this is possible always use HD Audio on internel (IP) network and do not case
+about used on the line (ISDN) format.
+
++-------------------------------------------------------------------+
+|  HD Audio support for IP conference endpoints                     |
++-------------------------------------------------------------------+
+
+To activate HD Audio support for IP conferencing please add one or
+mode HD Audio codecs to codeclist of capi command 'resource'.
+Please read README.media for details on 'resource'
+
+
++-------------------------------------------------------------------+
+|  Conferencing between HD and NB Audio endpoints                   |
++-------------------------------------------------------------------+
+
+In case of conference with HD and NB (Narrow Band) Audio endpoints
+the quelity of HD endpoints is preserved
+

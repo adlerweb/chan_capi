@@ -1,0 +1,1300 @@
++===================================================================+
+|       Media control commands                                      |
++===================================================================+
+
++-------------------------------------------------------------------+
+|  noisesuppressor                                                  |
++-------------------------------------------------------------------+
+
+Description:
+  Noise Suppressor is used to activate or to deactivate suppression of ambient noise, 
+  which can be used to remove noise from speech caused by fans, air cooling systems, 
+  cars, trains, and other sources of ambient noises from speech.
+
+Direction:
+  Applies to Rx path only.
+  In case of line interconnect, it can be activated for multiple parties.
+
+Supported hardware:
+  Dialogic(R) Diva(R) 4PRI PCI, 2PRI PCI, 4PRI PCIe HS Media Board
+  Other Dialogic(R) Diva(R) Media Boards equipped with DSPs can use this 
+  feature only together with RTP.
+
+Syntax:
+noisesuppressor,[yes|no]
+
+Syntax example:
+s,n,capicommand(noisesuppressor,yes)
+s,n,capicommand(noisesuppressor,no)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(noisesuppressor,yes)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(noisesuppressor,no)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
+PBX Example:
+/////////////////////////////////////////////////////////////////////
+[macro-capinoisesuppressor]
+exten => s,1,capicommand(noisesuppressor,yes)
+
+[isdn-in]
+exten => 12345,1,Progress()
+exten => 12345,n,Set(TIMEOUT(digit)=1)    ; Set Digit Timeout to 5 seconds
+exten => 12345,n,Set(TIMEOUT(response)=5) ; Set Response Timeout to 10 seconds
+exten => 12345,n,Playback(demo-enterkeywords,noanswer,us)
+exten => 12345,n,Answer
+exten => 12345,n,Wait(2)
+exten => 12345,n,capicommand(noisesuppressor,yes)
+exten => 12345,n,Dial(DIALOGICDIVA/ISDN1/100,10,M(capinoisesuppressor))
+exten => 12345,n,Hangup()
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  clamping                                                         |
++-------------------------------------------------------------------+
+
+Description:
+  Clamping is used to activate or to deactivate suppression
+  (removal from voice stream) of DTMF tones.
+
+Direction:
+  Applies to Rx path only.
+  In case of line interconnect, it can be activated for multiple parties.
+
+Supported hardware:
+  Requires one Dialogic(R) Diva(R) Media Board equipped with DSPs.
+
+Syntax:
+clamping,N
+  N - estimated duration of DTMF tones to be suppressed in ms
+    0         - deactivate clamping
+    1 ... 250 - activate clamping
+
+Syntax example:
+s,n,capicommand(clamping,100)
+s,n,capicommand(clamping,0)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(clamping,100)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(clamping,0)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
+PBX Example:
+/////////////////////////////////////////////////////////////////////
+[macro-capiclamping]
+exten => s,1,capicommand(clamping,100)
+
+[isdn-in]
+exten => 12345,1,Progress()
+exten => 12345,n,Set(TIMEOUT(digit)=1)    ; Set Digit Timeout to 5 seconds
+exten => 12345,n,Set(TIMEOUT(response)=5) ; Set Response Timeout to 10 seconds
+exten => 12345,n,Playback(demo-enterkeywords,noanswer,us)
+exten => 12345,n,Answer
+exten => 12345,n,Wait(2)
+exten => 12345,n,capicommand(clamping,100)
+exten => 12345,n,Dial(DIALOGICDIVA/ISDN1/100,10,M(capiclamping))
+exten => 12345,n,Hangup()
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  rxagc                                                            |
++-------------------------------------------------------------------+
+
+Description:
+  Used to activate or to deactivate Automatic Gain Control (AGC)
+  for Rx direction. AGC level is -6dBm.
+
+Direction:
+  Applies to Rx path only.
+  In case of line interconnect, it can be activated for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+rxagc,[yes|no]
+
+Syntax example:
+s,n,capicommand(rxagc,yes)
+s,n,capicommand(rxagc,no)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(rxagc,yes)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(rxagc,no)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
+PBX Example:
+/////////////////////////////////////////////////////////////////////
+[macro-capirxagc]
+exten => s,1,capicommand(rxagc,yes)
+
+[isdn-in]
+exten => 12345,1,Progress()
+exten => 12345,n,Set(TIMEOUT(digit)=1)    ; Set Digit Timeout to 5 seconds
+exten => 12345,n,Set(TIMEOUT(response)=5) ; Set Response Timeout to 10 seconds
+exten => 12345,n,Playback(demo-enterkeywords,noanswer,us)
+exten => 12345,n,Answer
+exten => 12345,n,Wait(2)
+exten => 12345,n,capicommand(rxagc,yes)
+exten => 12345,n,Dial(DIALOGICDIVA/ISDN1/100,10,M(capirxagc))
+exten => 12345,n,Hangup()
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  txagc                                                            |
++-------------------------------------------------------------------+
+
+Description:
+  Used to activate or to deactivate Automatic Gain Control (AGC)
+  for Tx direction. AGC level is -6 dBm.
+
+Path:
+  Applies to Tx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+txagc,[yes|no]
+
+Syntax example:
+s,n,capicommand(txagc,yes)
+s,n,capicommand(txagc,no)
+
+IVR example:
+  See rxagc
+
+PBX Example:
+  See rxagc
+
++-------------------------------------------------------------------+
+|  rxdgain                                                          |
++-------------------------------------------------------------------+
+
+Description:
+  Used to access Digital Gain Control for Rx direction.
+  Allows to set gain in the range from -127 dBm to +6 dBm.
+
+Diection:
+  Applies to Rx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+rxdgain,N
+  N - gain in dBm, float
+  -127 ... +6  - gain
+  -128 or less - infinite attenuation
+
+Syntax example:
+s,n,capicommand(rxdgain,5.5)
+s,n,capicommand(rxdgain,-14.2)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(rxdgain,5.5)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(rxdgain,-70)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  incrxdgain                                                       |
++-------------------------------------------------------------------+
+
+Description:
+  Used to access Digital Gain Control for Rx direction.
+  Allows to change gain in the range from -127 dBm to +6 dBm
+
+Diection:
+  Applies to Rx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+incSyntax:
+rxdgain,N
+  N - gain increment in dBm, float
+
+Syntax example:
+s,n,capicommand(incrxdgain,2.5)   // add 2.5 dBm to actiall gain
+s,n,capicommand(incrxdgain,-2.5)  // substract 2.5 dBm from actual gain
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(incrxdgain,2.5)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(incrxdgain,-2.5)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  txdgain                                                          |
++-------------------------------------------------------------------+
+
+Description:
+  Used to access Digital Gain Control for Tx direction.
+  Allows to set gain control in the range from -127 dBm to +6 dBm.
+
+Diection:
+  Applies to Tx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+txdgain,N
+  N - gain in dBm, float
+  -127 ... +6  - gain
+  -128 or less - infinite attenuation
+
+Syntax example:
+s,n,capicommand(txdgain,5.5)
+s,n,capicommand(txdgain,-14.2)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(txdgain,5.5)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(txdgain,-70)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  inctxdgain                                                       |
++-------------------------------------------------------------------+
+
+Description:
+  Used to access Digital Gain Control for Tx direction.
+  Allows to change gain in the range from -127 dBm to +6 dBm
+
+Diection:
+  Applies to Tx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+incSyntax:
+rxtgain,N
+  N - gain increment in dBm, float
+
+Syntax example:
+s,n,capicommand(inctxdgain,2.5)   // add 2.5 dBm to actiall gain
+s,n,capicommand(inctxdgain,-2.5)  // substract 2.5 dBm from actual gain
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(inctxdgain,2.5)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(inctxdgain,-2.5)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  pitchcontrol                                                     |
++-------------------------------------------------------------------+
+
+Description:
+  Used to set recording (Rx direction) and playback (Tx direction)
+  rate in the range between 1250 ... 51200 Hz.
+
+  Using pitch control, it is possible to play (record) a voice message faster
+  (rate > 8000 Hz) or slower (rate < 8000 Hz).
+  This is useful if the playback speed of voice mail messages needs to be decreased
+  to achieve better understanding or to increase playback speed to
+  rewind over a certain part of the voice mail message.
+
+Diection:
+  Applies to Rx and to Tx path. Can be used only for playback and for
+  recording of voice data. Not available with line interconnect and RTP.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+pitchcontrol,RxN,TxN - set Rx and Tx rate to different values
+pitchcontrol,N       - set Rx and Tx rate to same value
+pitchcontrol         - deactivate rate control
+
+  RxN, TxN, N - rate in the range 1250 ... 51200 Hz.
+
+Syntax example:
+s,n,capicommand(pitchcontrol,8200,8100) ; Set Rx rate to 8200 Hz and Tx rate to 8100 Hz
+s,n,capicommand(pitchcontrol,8400)      ; Set Rx and Tx rate to 8400 Hz
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(pitchcontrol,8200)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(pitchcontrol,8000)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  incpitchcontrol                                                  |
++-------------------------------------------------------------------+
+
+Description:
+  Used to change the recording (Rx direction) and playback (Tx direction)
+  rate in the range from 1250 ... 51200 Hz.
+
+  With pitch control it is possible to play (record) a voice message faster
+  (rate > 8000 Hz) or slower (rate < 8000 Hz).
+  This is useful if the playback speed of voice mail messages needs to be decreased
+  to achieve better understanding or to increase playback speed to
+  rewind over a certain part of the voice mail message.
+
+Diection:
+  Applies to Rx and to Tx path. Can be used only for playback and for
+  recoring of voice data. Not available with line interconnect and RTP.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+incpitchcontrol,RxN,TxN - change Rx and Tx rate using different values
+incpitchcontrol,N       - change Rx and Tx rate using same value
+
+  RxN, TxN, N - rate change in Hz
+
+Syntax example:
+s,n,capicommand(incpitchcontrol,100)   // Increase Rx and Tx rate by 100 Hz
+s,n,capicommand(incpitchcontrol,-100)  // Decrease Rx and Tx rate by 100 Hz
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(incpitchcontrol,100)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(incpitchcontrol,100)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  mftonedetection                                                  |
++-------------------------------------------------------------------+
+
+Description:
+  Used to activate or to deactivate MF listen on B-channel data.
+  Detected MF tones are mapped to appropriate DTMF digits.
+  MF digits K1, K2, KP, S1, and ST are mapped to DTMF digits
+  A, B, C, D, and * respectively.
+
+Direction:
+  Applies to Rx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+mftonedetection,[yes|no]
+
+Syntax example:
+s,n,capicommand(mftonedetection,yes)
+s,n,capicommand(mftonedetection,no)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(mftonedetection,yes)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(mftonedetection,no)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  pulsedetection                                                   |
++-------------------------------------------------------------------+
+
+Description:
+  Used to activate or to deactivate dial pulse detector.
+  Detected dialing pulses are mapped to appropriate DTMF digits.
+
+Direction:
+  Applies to Rx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+pulsedetection,[yes|no]
+
+Syntax example:
+s,n,capicommand(pulsedetection,yes)
+s,n,capicommand(pulsedetection,no)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(pulsedetection,yes)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(pulsedetection,no)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  sendtone and stoptone                                            |
++-------------------------------------------------------------------+
+
+Description:
+  Send tone (sendtone) sending of the next tone while one tone is already
+  active will automatically replace the tone to be transmitted with the
+  new one. Sending of the DTMF digits will automatically stop tone transmission.
+  Stop transmission of the tone (stoptone).
+
+Path:
+  Applies to Tx path only.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+
+Syntax:
+sendtone,N
+stoptone
+
+  N - tone to be sent
+    0x82 - Dial tone
+    0x83 - PABX internal dial tone
+    0x84 - Special dial tone (stutter dial tone
+    0x85 - Second dial tone
+    0x86 - Ringing tone
+    0x87 - Special ringing tone
+    0x88 - Busy tone
+    0x89 - Congestion tone (reorder tone
+    0x8A - Special information tone
+    0x8B - Comfort tone
+    0x8C - Hold tone
+    0x8D - Record tone
+    0x8E - Caller waiting tone
+    0x8F - Call waiting tone
+    0x90 - Pay tone
+    0x91 - Positive indication tone
+    0x92 - Negative indication tone
+    0x93 - Warning tone
+    0x94 - Intrusion tone
+    0x95 - Calling card service tone
+    0x96 - Payphone recognition tone
+    0x97 - CPE alerting signal
+    0x98 - Off hook warning tone
+    0xA0 - Special information tone 0
+    0xA1 - Special information tone 1
+    0xA2 - Special information tone 2
+    0xA3 - Special information tone 3
+    0xA4 - Special information tone (operator intercept)
+    0xA5 - Special information tone (vacant circuit)
+    0xA6 - Special information tone (reorder)
+    0xA7 - Special information tone (no circuit found)
+    0xBF - Intercept tone
+    0xC0 - Modem calling tone
+    0xC1 - FAX calling tone
+    0xC2 - Answer tone
+    0xC3 - Answer tone with phase reversals
+    0xC4 - ANSam
+    0xC5 - ANSam with phase reversals
+    0xC6 - 2225 Hz (Bell 103 answer mode)
+    0xC7 - FAX flags
+    0xC8 - G2 FAX group ID
+    0xCA - Answering Machine Tone (390 Hz)
+    0xCB - Tone Alerting Signal (for Caller ID in PSTN)
+
+Syntax example:
+s,n,capicommand(sendtone,0x83) ; Send PABX internal dial tone
+s,n,capicommand(stoptone)      ; stop tone transmission
+
+IVR example
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(sendtone,0x83)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(stoptone)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
+
++-------------------------------------------------------------------+
+|  starttonedetection and stoptonedetection                         |
++-------------------------------------------------------------------+
+
+Description:
+  Start tone detection (starttonedetection)
+  Stop tone detection (stoptonedetection)
+
+Direction:
+  Applies to Rx path only. In case of line interconnect, it can be activated
+  for multiple parties.
+
+Supported hardware:
+  Requires one Diva Media Board equipped with DSPs.
+  Not available if RTP is active.
+
+Syntax:
+starttonedetection,N
+stoptonedetection
+
+  N - Extension number to be used in case a tone is detected.
+      The reception of appropriate DTMF digits will be simulated after the
+      detection of the tone. At same time, the variable CAPIDETECTEDTONE will be set
+      to identify the detected tone in decimal format and the variable
+      CAPIDETECTEDTONEVISUAL will be set to a user friendly name of the detected tone.
+
+      Tone identifier:
+        0x82 - Dial tone detected
+        0x83 - PABX internal dial tone detected
+        0x84 - Special dial tone (stutter dial tone) detected
+        0x85 - Second dial tone detected
+        0x86 - Ringing tone detected
+        0x87 - Special ringing tone detected
+        0x88 - Busy tone detected
+        0x89 - Congestion tone (reorder tone) detected
+        0x8A - Special information tone detected
+        0x8B - Comfort tone detected
+        0x8C - Hold tone detected
+        0x8D - Record tone detected
+        0x8E - Caller waiting tone detected
+        0x8F - Call waiting tone detected
+        0x90 - Pay tone detected
+        0x91 - Positive indication tone detected
+        0x92 - Negative indication tone detected
+        0x93 - Warning tone detected
+        0x94 - Intrusion tone detected
+        0x95 - Calling card service tone detected
+        0x96 - Payphone recognition tone detected
+        0x97 - CPE alerting signal detected
+        0x98 - Off hook warning tone detected
+        0xA0 - Special information tone 0
+        0xA1 - Special information tone 1
+        0xA2 - Special information tone 2
+        0xA3 - Special information tone 3
+        0xA4 - Special information tone (operator intercept)
+        0xA5 - Special information tone (vacant circuit)
+        0xA6 - Special information tone (reorder)
+        0xA7 - Special information tone (no circuit found)
+        0xBF - Intercept tone detected
+        0xC0 - Modem calling tone detected
+        0xC1 - FAX calling tone detected
+        0xC2 - Answer tone detected
+        0xC3 - Answer tone with phase reversals detected
+        0xC4 - ANSam detected
+        0xC5 - ANSam with phase reversals detected
+        0xC6 - 2225 Hz (Bell 103 answer mode) detected
+        0xC7 - FAX flags detected
+        0xC8 - G2 FAX group ID detected
+        0xC9 - Human speech detected
+        0xCA - Answering Machine Tone (390 Hz) detected
+        0xCB - Tone Alerting Signal detected (for Caller ID in PSTN)
+
+Syntax example:
+s,n,capicommand(starttonedetection,98) ; Change to extension 98 after detection of tone
+s,n,capicommand(stoptonedetection)     ; Disable detection of tones
+
+IVR example:
+
+In this example extension 98 is used to process detected tones.
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+
+exten => 1,1,Set(TIMEOUT(digit)=1)
+exten => 1,n,Set(TIMEOUT(response)=5)
+exten => 1,n,capicommand(starttonedetection,98) ; Change to 98 once tone is detected
+exten => 1,n,Goto(s,restart)
+
+; Continue after detection of the tone
+exten => 98,1,capicommand(stoptonedetection) ; Stop tone detection
+exten => 98,n,Set(TESTTONE=${CAPIDETECTEDTONE}) ; Tone identifier
+exten => 98,n,Set(TESTTONEVISUAL=${CAPIDETECTEDTONEVISUAL}) ; User friendly name
+exten => 98,n,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => 98,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => 98,n,Playback(demo-echodone) ; Let them know it's over
+exten => 98,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  vc                                                               |
++-------------------------------------------------------------------+
+
+Description:
+  While a voice message is played back, it is useful to be able to apply
+  media control commands to the voice stream without interrupting the playback
+  of the voice stream.
+  The same is true for conference and for connection between two parties.
+
+  The "vc" command allows to provide this functionality. With this command
+  it is possible to bind arbitrary chan_capi commands to sequences of
+  events (DTMF digits, ...). Once the events are detected, the appropriate command
+  is executed without interrupting the voice stream.
+  "vc" allows to create a menu that is executed in the background and allows to
+  control the voice stream by activation or deactivation of AGC, noise suppression,
+  control the level of the signal, and playback speed.
+  "vc" allows to use any command supported by the channel driver, but please note
+  that commands are not executed in the context of the dial plan. The commands
+  are executed using the context of the detected events parallel to the dialplan and
+  independent from the dialplan.
+
+Syntax:
+vc,command,key,param,param1,...,paranN
+  Add to menu: on detection of key execute command using parameters param1,...,paramN
+
+vc,command,key
+  Add to menu: on detection of key execute command without parameters
+
+vc,command
+  Remove all instances of command from menu
+
+vc
+  Cleanup menu
+
+In case one command will use a key that is already in use, then a new command will overwrite
+the existing command:
+exten => s,n,capicommand(vc,txagc,3,yes)
+exten => s,n,capicommand(vc,inctxdgain,3,1.5)
+
+is equivalent to:
+
+exten => s,n,capicommand(vc,inctxdgain,3,1.5)
+
+It is better to use only one digit as key for commands in menu if using the menu for IVR and
+voice mailbox. This provides short response time.
+
+In case the menu is used for conference or for connection between two parties, it may be useful to use
+two or three digits for the key. This will prevent an activation by accidentally pressing a key.
+
+Syntax example:
+exten => s,n,capicommand(vc,inctxdgain,5,1.5) ; Execute inctxdgain,1.5 if received DTMF digit 5
+exten => s,n,capicommand(vc,txagc,3,yes)      ; Execute txagc,yes if received DTMF digit 3
+
+IVR Example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer
+exten => _X.,n,Goto(s,1)
+exten => s,1,Wait(1)
+exten => s,n,capicommand(vc,sendtone,1,0x82)
+exten => s,n,capicommand(vc,stoptone,2)
+exten => s,n,capicommand(vc,txagc,3,yes)
+exten => s,n,capicommand(vc,txagc,4,no)
+exten => s,n,capicommand(vc,inctxdgain,5,1.5)
+exten => s,n,capicommand(vc,inctxdgain,7,-2.5)
+exten => s,n,capicommand(vc,incpitchcontrol,8,0,100)
+exten => s,n,capicommand(vc,incpitchcontrol,9,0,-400)
+exten => s,n(restart),Playback(demo-instruct)
+exten => s,n,Goto(s,restart)
+exten => s,n,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  chat (MeetMe/Conference)                                         |
++-------------------------------------------------------------------+
+
+Description:
+  Used to enter (create) chat (conference room). A new conference room is created
+  if necessary.
+
+  There are three types of conference members:
+    Regular users
+    Operators
+    Listeners
+
+  Regular users can receive the voice stream from the conference and send the voice stream to the conference.
+  The outgoing (from user to conference) voice stream from regular users can be muted (deactivated)
+  and unmuted (activated) if necessary by 'chat_mute' command.
+
+  Operators can receive the voice stream from the conference and send the voice stream to the conference.
+  The outgoing (from user to conference) voice stream from operators cannot be muted (deactivated)
+  by 'chat_mute' command.
+
+  Listeners can only receive the voice stream from the conference.
+  The outgoing (from user to conference) voice stream is muted (decativated) and cannot be unmuted (activated)
+  by the 'chat_mute' command.
+
+
+Direction:
+  Creates one Any-to-Any conference room. Conference AGC (evaluation of active talker) receives active as
+  soon as more then two members are added to the conference.
+
+Supported hardware:
+  Diva
+
+Syntax:
+capicommand(chat,<roomname>,<options>,controller)
+  roomname - conference room name
+  options
+      m - The first caller will get music-on-hold until the second caller arrives
+      h<sec> - Hangup after <sec> seconds if caller is alone in conference.
+      l - The caller is listener (passive) conference member and cannot be unmuted by 'chat_mute' command
+      o - The caller is conference operator and cannot be muted by 'chat_mute' command
+  controller - CAPI controller
+
+Syntax example:
+exten => s,n,capicommand(chat,test,m,1)
+exten => s,n,capicommand(chat,test,m,1,3)
+exten => s,n,capicommand(chat,test,m,1-4)
+exten => s,n,capicommand(chat,test,m,1-4,7)
+exten => s,n,capicommand(chat,test,m,1-4,7-10)
+exten => s,n,capicommand(chat,test,mh300,1-4)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed, use to select conference room
+
+; You can create macro to set up vc menu
+exten => 1,1,capicommand(clamping,100)         ; Activate suppression of DTMF tones
+exten => 1,n,capicommand(vc,incrxdgain,0,1.5)  ; Install voice command menu for volume control, '0' to increase volume
+exten => 1,n,capicommand(vc,incrxdgain,1,-1.5) ; Install voice command menu for volume control, '1' to decrease volume
+exten => 1,n,capicommand(vc,txdgain,2,-128) ; Install voice command menu for volume control, '2' to mute tx path
+exten => 1,n,capicommand(vc,txdgain,3,0) ; Install voice command menu for volume control, '3' to activate tx path
+exten => 1,n,capicommand(chat,test1,m,1-4)     ; Create/enter conference room 'test1'
+
+exten => 2,1,capicommand(clamping,100)         ; Activate suppression of DTMF tones
+exten => 2,n,capicommand(txdgain,-128)         ; Deactivate tx path
+exten => 2,n,capicommand(vc,incrxdgain,0,1.5)  ; Install voice command menu for volume control, '0' to increase volume
+exten => 2,n,capicommand(vc,incrxdgain,1,-1.5) ; Install voice command menu for volume control, '1' to decrease volume
+exten => 2,n,capicommand(vc,txdgain,2,-128) ; Install voice command menu for volume control, '2' to mute tx path
+exten => 2,n,capicommand(vc,txdgain,3,0) ; Install voice command menu for volume control, '3' to activate tx path
+exten => 2,n,capicommand(chat,test1,m,1-4)     ; Create/enter conference room 'test1
+exten => 2,n,capicommand(chat,test2,m,1-4)     ; Create/enter conference room 'test2'
+
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+| IP Clear Channel fax and chat (MeetMe/Conference)                 |
+| with access to DSP resources                                      |
++-------------------------------------------------------------------+
+
+Description:
+  Used to assign DSP resources to connected IP users.
+  Assigned DSP resources can be used for:
+    Transmission of Clear Channel fax with up to 33600Bps (V.34), please read 'sendfax' in README.Diva.fax for details.
+    Reception    of Clear Channel fax with up to 33600Bps (V.34), please read 'receivefax' in README.Diva.fax for details.
+    Create conference member with media processing capabilities.
+
+  If the conference member is connected to the IP network using 'chat' chan_capi command,
+  then this peer cannot allocate and use the DSP resources required for media processing.
+  This results in processing of IP partipiants as simple conferencing member without
+  any media processing capabilities except line interconnect (conferencing) and
+  conferencing AGC (active talker evaluation).
+  With the 'resource' chan_capi command it is possible to assign DSP resources to
+  the IP network connection before proceeding with 'chat' chan_capi command. This
+  allows for using the provided DSP resources for media processing for the connected IP
+  network conference members.
+
+  There are three types of conference members:
+    Regular users
+    Operators
+    Listeners
+
+  Regular users can receive voice streams from the conference and send voice streams to the conference.
+  The outgoing (from user to conference) voice stream from regular users can be muted (deactivated)
+  and unmuted (activated) if necessary by 'chat_mute' command.
+
+  Operators can receive voice streams from the conference and send voice streams to the conference.
+  The outgoing (from user to conference) voice stream from operators cannot be muted (deactivated)
+  by 'chat_mute' command.
+
+  Listeners can only receive the voice stream from the conference.
+  The outgoing (from user to conference) voice stream is muted (decativated) and cannot be unmuted (activated)
+  by 'chat_mute' command.
+
+
+Note:
+  Certain problems may occur if processing sent in-band DTMF events for
+  IP connections.
+  chan_diva can use sent in-band DTMF events to control media
+  processing (chan_capi 'vc' command). This works without problems for
+  E.1/T.1/S0/Analog connections. But in case of IP connections, the media
+  stream is processed by the gateway or is originated by the IP device.
+  Most of the gateways will remove in-band DTMF events from the media stream and
+  forward detected DTMF events as RTP payloads. IP devices will not use
+  in-band DTMF signaling and send DTMF events as RTP payloads.
+  In both cases, DTMF events are not sent in-band and processed by signaling
+  before reaching the chan_capi.
+  The solution is to configure gateways and IP devices to send DTMF events
+  in-band in addition to sending them as RTP payloads or use in-band MF signaling.
+
+Supported hardware:
+  Assign DSP resources to connected IP network conference members. This feature is available
+  only for Diva hardware equipped with DSPs.
+
+  For Diva 2PRI PCI, Diva 4PRI PCI, Diva 1PRI PCIe HS, Diva 2PRI PCIe HS, and Diva 4PRI PCIe HS no
+  restrictions apply for this feature and it is possible to access N x 30 DSP resources
+  (N - amount of interfaces, 1 - 1PRI, 2 - 2PRI, 4 - 4PRI) in addition to used for E.1/T.1
+  DSP resources.
+
+  For Diva PRI Rev.3 PCI and Diva PRI Rev.3 PCIe, it is possible to reserve two DSPs for processing
+  of E.1/T.1 without media processing features and share remaining DSPs between E.1/T.1 and IP
+  for connections with media processing features.
+  Using hardware with 30 DSPs and E.1 it is possible to create:
+    From:  2 x E.1 without media processing + 28 x E.1 with media processing
+    To:   30 x E.1 without media processing + 28 x IP with media processing
+  Using hardware with 30 DSPs and T.1 this is possible to create:
+    From: 23 x T.1 with media processing    +  7 x IP with media processing
+    To:   23 x T.1 without media processing + 28 x IP with media processing
+
+  For Diva BRI-2M Rev.2 PCI, Diva BRI-2M PCIe, Diva 4BRI Rev.2 PCI and for Diva 4BRI PCIe
+  it is not possible to reserve DSPs for processing of ISDN connections and to share
+  DSPs between ISDN and IP connection. If DSP resources are assigned to connected
+  IP conference members, then the appropriate DSP resources receive not available
+  for processing of ISDN connections. As result ISDN connections cannot be processed.
+  To resolve this problem please use the Diva configuration to change the configuration
+  of Diva board to resource board mode. In resource board mode, the ISDN interface is deactivated
+  and all available DSP resources (two DSPs for Diva BRI-2M and eight DSPs for Diva 4BRI)
+  can be used for connected IP conference members (two members for Diva BRI-2M and
+  eight members for Diva 4BRI).
+  
+
+Syntax:
+capicommand(ressource,controller[,codeclist])
+  controller - CAPI controller
+  codeclist  - separated by '+' character list of supported codecs, optional
+               codec oder codec1+codec2+...+codecN
+
+Syntax example:
+exten => s,n,capicommand(resource,1)
+exten => s,n,capicommand(resource,1,3)
+exten => s,n,capicommand(resource,1-4)
+exten => s,n,capicommand(resource,1-4,7)
+exten => s,n,capicommand(resource,1-4,7-10)
+exten => s,n,capicommand(resource,1-4,7-10,gsm)
+exten => s,n,capicommand(resource,1-4,7-10,alaw+ulaw+gsm+g722)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,capicommand(resource,1-4) ; Create DSP resource on CAPI controllers 1-4 for IP members,
+                                       ; ignore command for E.1/T.1/S0/POTS members
+exten => s,n,capicommand(clamping,100)         ; Activate suppression of DTMF tones
+exten => s,n,capicommand(rxagc,yes)            ; Activate Rx AGC
+exten => s,n,capicommand(noisesuppressor,yes)  ; Activate suppression of ambient noises
+exten => s,n,capicommand(vc,incrxdgain,0,1.5)  ; Install voice command menu for volume control, '0' to increase volume
+exten => s,n,capicommand(vc,incrxdgain,1,-1.5) ; Install voice command menu for volume control, '1' to decrease volume
+exten => s,n,capicommand(vc,txdgain,2,-128) ; Install voice command menu for volume control, '2' to mute tx path
+exten => s,n,capicommand(vc,txdgain,3,0) ; Install voice command menu for volume control, '3' to activate tx path
+exten => s,n,capicommand(chat,test1,m,1-4)     ; Craete/enter conference toom 'test1', controller field is ignored if
+                                               ; media processing resource is assigned by 'resource' command or for
+                                               ; E.1/T.1/S0/POTS members
+
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  chat_mute (Manage conference)                                    |
++-------------------------------------------------------------------+
+
+Description:
+  Used to manage chat (conference room). There are three types of conference members:
+    Regular users
+    Operators
+    Listeners
+
+  Regular users can receive the voice stream from the conference and send the voice stream to the conference.
+  The outgoing (from user to conference) voice stream from regular users can be muted (deactivated)
+  and unmuted (activated) if necessary by 'chat_mute' command.
+
+  Operators can receive the voice stream from the conference and send the voice stream to the conference.
+  The outgoing (from user to conference) voice stream from operators cannot be muted (deactivated)
+  by 'chat_mute' command.
+
+  Listeners can only receive the voice stream from the conference.
+  The outgoing (from user to conference) voice stream is muted (decativated) and cannot be unmuted (activated)
+  by 'chat_mute' command.
+
+   'chat_mute' command allows to manage conference switching of regular users between active (voice stream from
+   user to conference is active and used in conference) and passive (voice stream from user to conference
+   is deactivated and not used in conference) mode. 'chat_mute' command applies to regular users only.
+   The state of operators and listeners is not changed by this commmand. Independent from changes to this
+   command state, conference operators will remain active members and listeners will remain passive members
+   of the conference.
+
+Direction:
+  Used to control (deactivate and activate) the voice stream from regular users to the conference.
+
+Note:
+	The voice stream of regular users is active by default. If the conference mode was changed to half duplex
+  ('chat_mute,yes'), then new regular users are created with a deactivated voice stream until the conference
+  mode is changed back to full duplex ('chat_mute,no')
+
+Supported hardware:
+  Diva
+
+Syntax:
+capicommand(chat_mute,<action>[,<roomname>])
+  action - mandatory
+           yes - Change conference mode to half duplex, deactivate voice stream from regular
+                 users to conference.
+           no  - Change conference mode back to full duplex, activate voice stream from regular
+                 users to conference.
+  roomname - Conference room name. This parameter is necessary if a caller is not a member of the conference.
+             It allows the control of the conference by one user, who not member of conference. Using
+             this parameter, one user can control multiple conferences. This allows to implement the 
+             functionality of a common conference operator.
+
+Syntax example:
+exten => s,n,capicommand(chat_mute,yes)
+exten => s,n,capicommand(char_mute,no)
+exten => s,n,capicommand(chat_mute,yes,test_room)
+exten => s,n,capicommand(char_mute,no,test_room)
+
+Conference example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => 1291,1,Answer                             ; Accept call
+exten => 1291,n,capicommand(resource,1-4)          ; assign resource PLCI if call from IP
+exten => 1291,n,capicommand(clamping,200)          ; Activate DTMF suppression
+exten => 1291,n,capicommand(vc,chat_mute,0,yes)    ; Voice command, key 0 - change to half duplex mode
+exten => 1291,n,capicommand(vc,chat_mute,1,no)     ; Voice command, key 0 - change to full duplex mode
+exten => 1291,n,capicommand(chat,test_chat,mo,1-4) ; Add to conference as operator
+exten => 1291,n,Hangup()
+
+exten => 1292,1,Answer                             ; Accept call
+exten => 1292,n,capicommand(resource,1-4)          ; Assign resource PLCI if call from IP
+exten => 1292,n,capicommand(clamping,200)          ; Activate DTMF suppression
+exten => 1292,n,capicommand(chat,test_chat,m,1-4)  ; Add to conference as regular user
+exten => 1292,n,Hangup()
+
+exten => 1293,1,Answer                             ; Accept call
+exten => 1293,n,capicommand(resource,1-4)          ; Assign resource PLCI if call from IP
+exten => 1293,n,capicommand(clamping,200)          ; Activate DTMF suppression
+exten => 1293,n,capicommand(chat,test_chat,ml,1-4) ; Add to conference as listener
+exten => 1293,n,Hangup()
+
+exten => _X.,1,Answer
+exten => _X.,n,Goto(s,1)
+exten => s,1,Wait(1)
+exten => s,n(restart),Playback(demo-instruct)
+exten => s,n,Goto(s,restart)
+exten => s,n,Hangup
+
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  chat_play (play message to Conference)                           |
++-------------------------------------------------------------------+
+
+Description:
+  Used to play voice message to conference. Optionally music on hold is played to caller
+  while message is played to conference.
+
+Direction:
+	Message is played to all members of conference
+
+Supported hardware:
+  Diva
+
+Syntax:
+capicommand(chat_play,<roomname>,<options>,<filename>,controller)
+  roomname   - conference room name
+  options
+      m - The caller will get music-on-hold while message is played
+      s - The caller will hear the same message that is played
+	filename   - Voice message file name. Should be in aLaw (uLaw) format.
+  controller - CAPI controller
+
+Syntax example:
+exten => s,n,capicommand(chat,test,m,/tmp/file.alaw,1)
+exten => s,n,capicommand(chat,test,,/tmp/file.alaw,1-4,7-10)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,capicommand(clamping,100)         ; Activate suppression of DTMF tones
+exten => s,n,Playback(record-name)             ; Ask for name
+exten => s,n,capicommand(rxagc,yes)            ; Activate Rx AGC
+exten => s,n,Record(/tmp/${UNIQUEID}-info:alaw) ; Record message
+exten => s,n,capicommand(rxagc,no)             ; Deactivate Rx AGC
+exten => s,n,capicommand(chat_play,test,m,/tmp/${UNIQUEID}-info.alaw,1-4) ; Play message to conference,
+                                                                          ; play music on hold to caller
+exten => s,n,capicommand(chat,test,m,1-4)     ; Create/enter conference room 'test'
+
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  chat_command (Command)                                           |
++-------------------------------------------------------------------+
+
+Description:
+  Used to send command to conference.
+
+Supported hardware:
+  Diva
+
+Syntax:
+capicommand(chat_command,<options>,<roomname>)
+  options    - mandatory
+      r - Remove newest user from conference.
+					Command does not apply to calling member and  be used by operators only.
+      l - Remove all listeners from conference.
+					Command does not apply to calling member and  be used by operators only.
+      o - Remove all operators from conference.
+					Command does not apply to calling member and  be used by operators only.
+      a - Remove all users from conference.
+					Command does not apply to calling member and  be used by operators only.
+  roomname   - optional, room caller assigned to is used if not present
+
+Syntax example:
+exten => s,n,capicommand(chat_command,r)
+exten => s,n,capicommand(chat_command,lo,test)
+exten => s,n,capicommand(chat_command,a,test)
+
+Conference example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer
+exten => _X.,n,Authenticate(12345)
+exten => _X.,n,Playback(vm-rec-name)
+exten => _X.,n,Record(/tmp/name${UNIQUEID}.alaw,5,15)   ; Record name
+exten => _X.,n,capicommand(chat_play,c1,,/tmp/name${UNIQUEID}.alaw,1-4) ; Play name to conference
+exten => _X.,n,capicommand(resource,1-4)                ; Create resource PLCI if call from IP
+exten => _X.,n,capicommand(clamping,200)                ; Activate suppression of DTMF codes
+exten => _X.,n,capicommand(vc,chat_mute,1,yes)          ; Voice command, key 1 - mute all members except operators
+exten => _X.,n,capicommand(vc,chat_mute,2,no)           ; Voice command, key 2 - unmute all members except operators
+exten => _X.,n,capicommand(vc,chat_command,0,a,c1)      ; Voice command, key 0 - remove all members from conference
+exten => _X.,n,capicommand(vc,noisesuppressor,3,yes)    ; Voice command, key 3 - turn noise suppression on
+exten => _X.,n,capicommand(vc,noisesuppressor,4,no)     ; Voice command, key 4 - turn noise suppression off
+exten => _X.,n,capicommand(chat,c1,mo,1-4)              ; Add caller to conference as operator
+
+/////////////////////////////////////////////////////////////////////
+
++-------------------------------------------------------------------+
+|  echocancel                                                       |
++-------------------------------------------------------------------+
+
+Description:
+  Used to activate or to deactivate echo cancellation in accordance with G.168.
+  The vast majority of the public telephone system local loop wiring is done using
+  two-wire connections whereby the same pair of wires carries voice signals in both
+  directions. In the telephone company's central office or in an office PBX,
+  a two-to-four wire conversion is done using a hybrid circuit. Hybrid circuits do
+  not perform perfect impedance matches. The imperfection results in echo. The echo
+  canceller's goal is to detect and remove echo as quickly and effectively, thereby
+  minimizing any loss in voice quality due to the echo. The echo canceller must
+  perform this function under all conditions including double-talk (when both parties
+  are speaking at the same time) and in the presence of background noise. Furthermore,
+  the echo canceller must not cause detriment to signaling tones (DTMF etc.) or fax and
+  modem transmissions.
+
+  Diva supports echo cancellation (in accordance G.168 with NLP) with tail length up to 256 ms.
+  256 ms tail length is required to ensure the operation in the environments where the signal
+  is carried over the packet network. This is not always the case at customer site and can be done
+  by the transit network, wich does not provide own echo cancellation capabilities.
+
+  'echocancelnlp' configuration parameter (capi.conf) is used to activate (deactivate) NLP
+  (Non Linear Processor which removes the residual echo at the output of the echo cancellation unit).
+  You can use Diva chan_capi configuration to change this capi.conf configuration parameter.
+
+  The Diva software automatically deactivates echo cancellation upon the detection of fax or modem transmission.
+
+Direction:
+  Aplies to TDM interface (E.1/T.1/S0) only
+
+Supported hardware:
+  Diva Media Boards equipped with DSPs. 
+
+Syntax:
+echocancel,[yes|no]
+
+Syntax example:
+s,n,capicommand(echocancel,yes)
+s,n,capicommand(echocancel,no)
+
+IVR example:
+/////////////////////////////////////////////////////////////////////
+[isdn-in]
+exten => _X.,1,Answer     ; Answer the line
+exten => _X.,n,Goto(s,1)
+exten => s,1,Set(TIMEOUT(digit)=5)  ; Set Digit Timeout to 5 seconds
+exten => s,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => s,n(restart),BackGround(demo-instruct) ; Play some instructions
+exten => s,n,WaitExten      ; Wait for an extension to be dialed.
+exten => 1,1,capicommand(echocancel,yes)
+exten => 1,n,Goto(s,restart)
+exten => 2,1,capicommand(echocancel,no)
+exten => 2,n,Goto(s,restart)
+exten => 99,1,Echo
+exten => i,1,Playback(invalid)
+exten => i,n,Goto(s,restart)
+exten => h,1,Hangup
+/////////////////////////////////////////////////////////////////////
+
+PBX Example:
+/////////////////////////////////////////////////////////////////////
+[macro-capiechocancel]
+exten => s,1,capicommand(echocancel,yes)
+
+[isdn-in]
+exten => 12345,1,Progress()
+exten => 12345,n,Set(TIMEOUT(digit)=1)    ; Set Digit Timeout to 5 seconds
+exten => 12345,n,Set(TIMEOUT(response)=5) ; Set Response Timeout to 10 seconds
+exten => 12345,n,capicommand(echocancel,yes)
+exten => 12345,n,Playback(demo-enterkeywords,noanswer,us)
+exten => 12345,n,Answer
+exten => 12345,n,Wait(2)
+exten => 12345,n,Dial(DIALOGICDIVA/ISDN1/100,10,M(capiechocancel))
+exten => 12345,n,Hangup()
+/////////////////////////////////////////////////////////////////////
+

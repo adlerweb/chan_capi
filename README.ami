@@ -1,0 +1,160 @@
++===================================================================+
+|       AMI commands and events                                     |
+|                                                                   |
+|       Device state events                                         |
++===================================================================+
+
++-------------------------------------------------------------------+
+|  Action CapichatList                                              |
++-------------------------------------------------------------------+
+
+List all users in conference or in all conferences
+
+Conference: Capi chat room name
+
+If Conference is not provided then command lists all users in all capi chat rooms.
+
+List of users is delicered as serie of CapichatList events.
+List of users starts ends with CapichatListComplete event.
+
++-------------------------------------------------------------------+
+|  Action CapichatMute                                              |
++-------------------------------------------------------------------+
+
+Mute all regular users if conference or mute selected user.
+
+Conference: Conference room to mute
+Member:     User to mute (Channel name)
+Path:       Path to mute (Rx or Tx)
+
+If only Conference provided then entire room is muted.
+If only Member provided then only selected user is muted.
+If Path not provided then Tx path is assumed.
+Path is valid only if Member iss provided.
+
+If mute only one member this command is alias for capicommand
+txdgain,-128
+
++-------------------------------------------------------------------+
+|  Action CapichatUnmute                                            |
++-------------------------------------------------------------------+
+
+Mute all regular users if conference or mute selected user.
+
+Conference: Conference room to unmute
+Member:     User to mute (Channel name)
+Path:       Path to mute (Rx or Tx)
+
+If only Conference provided then entire room is muted.
+If only Member provided then only selected user is muted.
+If Path not provided then Tx path is assumed.
+Path is valid only if Member iss provided.
+
+If unmute only one member this command is alias for capicommand
+txdgain,0
+
++-------------------------------------------------------------------+
+|  Action CapichatRemove                                            |
++-------------------------------------------------------------------+
+
+Remove member from conference
+
+Conference: Conference room name
+Member:     User to remove (Channel name)
+
++-------------------------------------------------------------------+
+|  Action CapiCommand                                               |
++-------------------------------------------------------------------+
+
+Execute any of supported capicommand commands (echocance,
+noisesuppressor, ...).
+
+Channel: Channel name
+Command: capicomand command
+
++-------------------------------------------------------------------+
+|  Event CapichatList                                               |
++-------------------------------------------------------------------+
+
+Provided information about state of conference member.
+
+Event: CapichatList
+ActionID: Action ID as used in CapichatList request.
+Conference: Conference room name
+UserNumber: User in conference
+CallerIDNum: CID
+CallerIDName: CID name
+Channel: Channel name
+Admin: Yes/No
+Role: Listen onlys/Talk and listen/Talk only
+MarkedUser: Yes/No
+Muted: No/By self/By admin/
+Talking: Yes/No/Not monitored
+Domain: TDM/IP
+DTMF: %s\r\n"
+EchoCancel: Yes/No
+NoiseSupp: Yes/No
+RxAGC: Yes/No
+TxAGC: Yes/No
+RxGain: Gain value in dB
+TxGain: Gain value in dB
+
++-------------------------------------------------------------------+
+|  Event CapichatListComplet                                        |
++-------------------------------------------------------------------+
+
+Terminates serie of CapichatList events.
+
+ListItems: Mumber of CapichatList events preceeding to this event
+
++-------------------------------------------------------------------+
+|  Event CapichatJoin                                               |
++-------------------------------------------------------------------+
+
+User joined conference
+
+Channel: User name (Channel name)
+Uniqueid: Unique channel ID
+Conference: Conference room name
+Conferencenum: Conference room number
+CallerIDnum: CID
+CallerIDname: CID name
+
++-------------------------------------------------------------------+
+|  Event CapichatLeave                                              |
++-------------------------------------------------------------------+
+
+User leaved conference
+
+Channel: User name (Channel name)
+Uniqueid: Unique channel ID
+Conference: Conference room name
+Conferencenum: Conference room number
+CallerIDnum: CID
+CallerIDname: CID name
+Duration: Time user spend in conference, sec.
+
++-------------------------------------------------------------------+
+|  Event CapichatEnd                                                |
++-------------------------------------------------------------------+
+
+Last user leaved conference
+
+Conference: Conference room name
+
++-------------------------------------------------------------------+
+|  Device state event ISDN/I[N]/congestion                          |
++-------------------------------------------------------------------+
+
+Device state event ISDN/I[N]/congestion, where [N] is CAPI controller
+number.
+Provides state of CAPI interface.
+
++-------------------------------------------------------------------+
+|  Device state event capichat:[room]                               |
++-------------------------------------------------------------------+
+
+Device state event capichat:[room], where [room] is the conference
+name.
+Provides state of Capichat conference room.
+

@@ -1,0 +1,93 @@
++===================================================================+
+|       Message Waiting Indication (MWI)                            |
++===================================================================+
+
++-------------------------------------------------------------------+
+|  Control MWI indicators (MWI Server)                              |
++-------------------------------------------------------------------+
+
+Using Asterisk 1.6 or newer it is possible to provide information about state of user
+mailbox to ISDN phone.
+Dependent on the state of mailbox this is possible to send MWI Activate or MWI deactivate
+request to activate or to deactivate Message Waiting Indicator on the phone.
+
+To activate MWI function on CAPI controller please provide in the configuration of this
+controller the list of mailboxes to be monitored:
+
+mwimailbox=mailbox1[:controlling user number1[:controlling user provided number1]][@context1], ...
+
+The use of parameters can differ from PBX to PBX and even from PBX installation to PBX installation.
+Following description apply to common use of parameters.
+
+Where:
+  mailbox                          - Number of mailbox. Used to subsscribe to mailbox (voicemail.conf
+                                     and at same time used by PBX to address the MWI indicator on device.
+  controlling user number          - Number where mailbox can be accessed (often same as mailbox)
+  controlling user provided number - Password, used by PBX to check permissions
+
+Additional configuration parameters depends on type of PBX used and on the PBX installation:
+mwifacptynrtype     - type of MWI facility party number, 0 - unknown (default), 1 - public
+mwifacptynrton      - MWI facility party number type of number and numbering plan identification
+                      (coding as for byte 0 of the calling party number). This byte is only valid
+                      if byte mwifacptynrtype contains the value 1. Set to 0 by default.
+mwifacptynrpres     - MWI facility party number type presentation and screening indicator
+                      (coding as for byte 1 of the calling party number). This byte is only valid
+                      if byte mwifacptynrtype contains the value 1. Setr to 0 by default.
+mwibasicservice     - MWI basic Service, coded in accordance with ETS 300 196 [D.5]. Set to 1 (voice)
+                      by default.
+mwiinvocation       - MWI invocation mode, 0 - deffered, 1 - immediate, 2 - combined,
+                      65535 - suppres invocation code. Set to 2 by default.
+
+Example:
+
+[ISDN1]
+controller=1
+mwimailbox=12345:12345:221122@other,12347:12348,12349
+
+activates monitoring of the mailboxes: 12345@other, 12347@default and 12349@default and sending
+of MWI requests using CAPI controller 1.
+
++-------------------------------------------------------------------+
+|  Direct control MWI indicators (MWI Server)                       |
++-------------------------------------------------------------------+
+
+This is possible to send MWI Activate and MWI deactivate messages
+directly from dialplan using capicommand(mwi, ...).
+This can be necessary if testing the system, if voice mailbox is managed
+by other software (not by asterisk) or to verify MWI parameters.
+
+capicommand(mwi,xmit,activate, ...) where parameters are:
+CAPI controller, MWI basic service,Number Of Messages, Message Status, Message Reference, Invocation Mode,
+Facility Number Type, Type of Number, Presentation and Screening,Mailbox,
+Facility Number Type, Type of Number, Presentation and Screening, Controlling User Number,
+Facility Number Type, Type of Number, Presentaation and Screening, Controlling User Provided Number
+
+capicommand(mwi,xmit,deactivate, ...) where parameters are:
+CAPI controller, MWI basic service, Invocation Mode,
+Facility Number Type, Type of Number, Presentation and Screening,Mailbox,
+Facility Number Type, Type of Number, Presentation and Screening, Controlling User Number
+
+Example:
+exten => _X.,n,capicommand(mwi,xmit,activate,1|1|1|0|0|2|1|0|0|42|1|0|0|41||||)
+exten => _X.,n,capicommand(mwi,xmit,deactivate|1|1|2|1|0|0|41|1|0|0|41)
+
+Please refer to COMMON-ISDN-API Version 2.0 Part III Supplementary Services for more details
+on parameters.
+
++-------------------------------------------------------------------+
+|  Receive MWI messages (MWI Client)                                |
++-------------------------------------------------------------------+
+
+Upon reception of MWI Activate messages from network chan_capi automatically
+generates Asterisk MWI events for mailbox N@CAPI_Remote, where N is the
+received as part of MWI Activate message Calling Party Number.
+
+
++-------------------------------------------------------------------+
+|  Notes                                                            |
++-------------------------------------------------------------------+
+PBX often use one separate BRI trunk for transferring of MWI information (only MWI requests are transmitted
+this trunk).
+
+Certain PBX require up to 15 seconds until MWI information is processed.
+

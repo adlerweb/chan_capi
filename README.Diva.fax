@@ -1,0 +1,355 @@
++===================================================================+
+|       Diva fax support                                            |
++-------------------------------------------------------------------+
+|                                                                   |
+|       Intelligent fax processing                                  |
+|       FoIP/VoIP (Fax/Voice over IP) T.38 fax support              |
+|       FoIP/VoIP clear channel fax support                         |
+|       Color fax                                                   |
+|       High resolution fax, non standard paper size                |
+|       Use of fax with chan_capi                                   |
+|                                                                   |
++===================================================================+
+
++-------------------------------------------------------------------+
+| INTELLIGENT FAX PROCESSING                                        |
++-------------------------------------------------------------------+
+
+The fax chan_capi command set provides an easy way to access fax-related functionality.
+
+If you use fax document processing, you need to be aware of the following problems,
+that might occur:
+  * It is necessary to maintain a constant data stream between the application and the fax device.
+    Any interruption in this data stream will affect the quality of the fax document.
+  * It is necessary to deal with various low-level T.30 protocol settings like scan line time,
+    compression, error correction, etc.
+  * Not every application or device supports the command-set features provided by T.30 fax protocol.
+    This limits the functionality and may require modification of the existing application.
+  * The usage of fax document compression forces you to deal with compressed data (reception),
+    or to be able to generate compressed data stream on demand, or to provide documents in different
+    compression formats (transmission).
+  * The "classic" fax application is unable to deal with transmission speeds higher than 14400 bps.
+    To be able use V.34 fax transmission speeds of up to 33600 bps, the application needs to be modified.
+
+This section explains how the Dialogic(R) Diva(R) Media Board can overcome these drawbacks and
+allows you to use the chan_capi to process fax documents with a comparable level of reliability and
+flexibility as a sophisticated high-level fax API.
+
+Reliable data transfer between application and Dialogic(R) Diva(R) Media Board
+------------------------------------------------------------------------------
+
+Dialogic(R) Diva(R) Media Boards provide a high-performance block-oriented IDI (ISDN Direct Interface)
+between the board hardware and the host CPU. The data transfer is performed via a BUS master DMA.
+This enables a reliable data transfer between the host CPU and the Diva Media Board memory that is not
+affected by the host CPU load. At the same time, using the BUS master DMA reduces the host CPU load.
+The Dialogic(R) Diva(R) chan_capi/CAPI interface/drivers does not perform data processing. It is only
+used to forward the data stream between the application and the IDI interface.
+The entire data processing is performed on the RISC CPU of the Diva Media Board.
+The reliability of the data stream is ensured by the board hardware through buffering
+(up to 64 Kbytes for every channel) and block-oriented data transfer (blocks of up to 2 Kbytes)
+via the BUS master DMA.
+
+Automatic T.30 protocol parameter adjustment
+--------------------------------------------
+
+The chan_capi can ignore low-level T.30 protocol settings. The T.30 protocol stack that runs on the RISC CPU
+of the Dialogic(R) Diva(R) Media Board is able to perform the required adjustment of transmission parameters
+to provide reliable and fast document transmission without requiring application intervention.
+You can overrule the automatic T.30 protocol parameter adjustment with global fax
+configuration options in the Dialogic(R) Diva(R) WEB configuration interface.
+
+ECM (Error Correction Mode) support
+-----------------------------------
+
+You can control ECM support via global fax configuration options in the Dialogic(R) Diva(R) WEB configuration interface.
+If you use global Diva configuration options to enable ECM support, the Dialogic(R) Diva(R) Media Board will use
+ECM mode for document transfer, if supported by the opposite side.
+Diva Media Boards use their internal memory to store document data. They retrieve data for ECM re-transmissions
+from this internal buffer (up to 64 Kbytes for every channel). This reduces the host CPU load and increases
+the reliability of the fax transmission.
+
+Document compression support
+----------------------------
+
+Dialogic(R) Diva(R) Media Boards use MR, MMR, T.6 fax document compression. In order to reduce transmission time,
+Diva Media Boards select the best compression algorithm supported by the opposite side. The Diva Media Board's
+RISC CPU is used to re-compress 1D-coded page data from the application to the format requested by the opposite
+side (transmission) and to convert received data to 1D-coded page data that is sent to the application (reception).
+The re-compression process is handled internally by the board's RISC CPU and happens fully transparent to the
+application that deals only with 1D (MH) coded data.
+You can adjust the compression-related T.30 protocol settings via Global fax configuration options.
+
+Automatic detection of document format
+--------------------------------------
+
+chan_capi uses the context of the file to determine the format of the document and to apply 
+all necessary for transmission of the document settings.
+Following media formats are detected:
+  SFF, CFF (Color Fax in JPEG or T.43 format), text file
+
+Diva supports media stream consisting from pages with different media types.
+
+V.34 (33600 bps) fax support
+----------------------------
+
+The V.34 fax support can be controlled via global fax configuration options in the Dialogic(R) Diva(R) Configuration 
+web interface. If the Dialogic(R) Diva(R) Media Board is able to establish a connection with a transmission speed
+higher than 14400 bps (V.34), it handles this transparent to the application.
+
+You can use the "divalogd" accounting utility that uses the Diva Media Board Management interface to get
+information on the transmission speed and the used compression algorithm.
+
++-------------------------------------------------------------------+
+| FoIP/VoIP (Fax/Voice over IP) T.38 FAX SUPPORT                    |
++-------------------------------------------------------------------+
+
+You can use the Dialogic(R) Diva(R) softIP software to access T.38 functionality.
+
+There is no need to change your chan_capi configuration. The Dialogic(R) Diva(R) softIP software exposes the
+CAPI interface towards chan_capi and the SIP interface towards the IP network.
+All T.38 and SIP-related configurations are handled using Diva WEB configuration interface.
+
+This is no limitation of the voice and supplementary services functionality of chan_capi.
+You can change the call flow between voice and fax or invoke the supplementary services at the CAPI interface
+and the Diva softIP software handles all necessary media and SIP negotiation.
+
+You can use the Diva hardware and the Diva softIP software in parallel on one system.
+It is possible to use line interconnect (conferencing) features between the Diva hardware and
+The Diva softIP software without any limitations.
+
+You can use the Diva softIP software in virtual environments (VMWare, XEN, ...).
+
++-------------------------------------------------------------------+
+| FoIP/VoIP CLEAR CHANNEL FAX SUPPORT                               |
++-------------------------------------------------------------------+
+
+Together with the Diva(R) Dialogic(R) hardware you can use the Dialogic(R) Diva(R) softIP software or chan_capi to
+access T.38 (only Diva softIP software) and Clear Channel Fax functionality.
+
+If you use the Diva softIP software there is no need to change your chan_capi configuration.
+The Dialogic(R) Diva(R) softIP software exposes the CAPI interface towards chan_capi and the SIP interface towards
+the IP network.  All T.38 and SIP related configurations are handled using the Diva WEB configuration interface.
+To activate Clear Channel Fax support, the Diva hardware should be switched in Resource Board mode.
+This is no limitation of the voice and supplementory services functionality of chan_capi.
+You can change the call flow between voice and fax or invoke the supplementary services at the CAPI interface
+and the Diva softIP software will handle all necessary media and SIP negotiation.
+You can use the Diva hardware in TDM (E.1/T.1/S0), in Resource Board mode and the Diva softIP software in
+parallel on one system. It is possible to use the line interconnect (conferencing) features between the Diva hardware and
+the Diva softIP software without any limitations.
+
+If you use chan_capi, then you can use 'resource' command to assign DSP resources to connected
+by IP users. Resource PLCI allows to send and to receive fax documents over IP using
+Clear Channel fax and to use the DSP resources for processing of IP media and for conferencing.
+It is possible to use the line interconnect (conferencing) features between E.1/T.1/S0/PSTN and
+IP peers without any limitations.
+
+Both the Diva softIP software and chan_capi allow to use G.729, G.723, iLBC, GSM, and other codecs
+supported by the Diva hardware.
+
+You can use the Diva hardware, chan_capi, and Diva softIP software in virtual environments if access by software is supported (XEN).
+
++-------------------------------------------------------------------+
+| COLOR FAX                                                         |
++-------------------------------------------------------------------+
+
+The Dialogic (R) Diva(R) hardware and the Dialogic (R) Diva(R) softIP software support color fax and allow to send/receive
+fax document using
+  Continuous tone color and gray-scale mode according to T.4 Annex E using JPEG coding
+  Lossless color and gray-scale mode according to T.43 using JBIG coding
+
+Color fax documents are processed using CFF.
+Each of these data formats starts with a unique pattern:
+  0x53 0x66 - SFF  - First bytes of magic number in SFF document header, CAPI 2.0 Annex B
+  0xFF 0xD8 - T.4  - Annex E SOI marker
+  0xFF 0xA8 0 T.43 - Start marker 0xFFA8
+
+It is possible to change between different media types in the time of fax transmission. This
+allows to change media between black and white and color for every page.
+
+After completion of transmission or reception of fax CFF (color/greyscale image format)
+variable FAXFORMAT is set to 8 (native format, CFF image) and variable FAXCFFFORMAT
+provides information about the image format.
+
++-------------------------------------------------------------------+
+| High resolution fax, non standard paper size                      |
++-------------------------------------------------------------------+
+
+The Dialogic (R) Diva(R) hardware and the Dialogic (R) Diva(R) softIP software provide access to following T.30 features:
+  Ultra/Super fine resolution
+  Non standard paper formats
+
+  The current COMMON-ISDN-API specification defines paper formats ISO A4, ISO B4, and ISO A3
+  at standard resolution (R8 x 3.85) and high resolution (R8 x 7.7).
+  Support for B4 and A3 is optional.
+  The Dialogic (R) Diva(R) software supports a COMMON-ISDN-API extension that enables FAX document transmission and
+  reception with paper formats ISO A4, ISO B4, and ISO A3 and the following resolutions as specified in T.30:
+    R8   x 3.85
+    R8   x 7.7
+    R8   x 15.4
+    R16  x 15.4
+    200  x 200  dpi
+    300  x 300  dpi
+    400  x 400  dpi
+    300  x 600  dpi
+    400  x 800  dpi
+    600  x 1200 dpi
+    600  x 600  dpi
+    1200 x 1200 dpi
+
+  The page format and resolution information is passed via appropriate fields in the SFF page header.
+  The Dialogic(R) Diva(R) SFF2TIFF utility provides conversion from SFF to TIFF format for all basic and
+  extended resolutions and paper formats.
+
++-------------------------------------------------------------------+
+|       Use of fax with chan_capi                                   |
++-------------------------------------------------------------------+
+
+Based on information from README
+
+Reception of fax documents
+--------------------------
+
+You can use the Dialogic (R) Diva(R) chan_capi configuration to activate fax support ("Fax detection" and "Fax detection time").
+The reception of the fax message is started using 'receivefax' capi command:
+
+  capicommand(receivefax,<filename>[,<stationid>,<headline>,<options>])
+
+  Parameters:
+    'filename'  - Contains the full path and file name for the resulting fax file, mandatory
+    'stationid' - station ID, optional
+    'headline'  - head line, optional
+    'options'   - fax options, optional
+                  'X' - use fax T.30 extended (default)
+                  'x' - do not use fax T.30 extended
+                  'k' - keep fax document in case of errors (by default document is removed
+                        if fax transmission was not completed with success).
+                  'f' - allow Fine resolution (default)
+                  'F' - do not use Fine resolution
+                  'u' - activate support for Super/Ultra fine resolutions and paper formats
+                  'j' - enable JPEG coding
+                  'b' - enable T.43 coding
+                  't' - do not use T.85
+                  'e' - do not use ECM
+                  'm' - do not use MMR (T.6) coding
+                  'd' - do not use MR (2D) coding
+
+It is possible to answer the incomming call using 'receivefax' command and start reception of
+the fax document directly.
+It is possible to answer a call using 'Answer' in voice mode and change to reception (transmission) of the fax by
+'receivefax' later, for example after the detection of the fax calling tone or after the user entered a password
+using DTMF digits.
+
+Using resource ('resource' command) PLCI allows to receive fax documents over IP using Clear Channel fax.
+The 'resource' command allocates one resource PLCI for IP connections only and does not perform any actions for
+E.1/T.1/S0/PSTN connections. This allows for safe use of 'resource' command in any context.
+
+Example:
+[isdn-in]
+exten => _X.,1,Answer()                   ; Answer in voice mode
+exten => _X.,n,Set(TIMEOUT(digit)=5)      ; Set Digit Timeout to 5 seconds
+exten => _X.,n,Set(TIMEOUT(response)=10)  ; Set Response Timeout to 10 seconds
+exten => _X.,n,BackGround(jpop)           ; Play message and wait until detection of fax calling tone
+
+exten => 124,1,Goto(handle_fax,s,1)       ; Extension 124 is dedicated to fax, answer in fax mode
+
+exten => fax,1,Goto(handle_fax,s,1)       ; Fax calling tone detected, change to fax mode
+exten => i,1,Hangup()                     ; Received unexpected event
+
+[handle_fax]
+exten => s,1,capicommand(receivefax,/tmp/${UNIQUEID}[,<stationid>,<headline>,<options>])
+exten => s,n,Hangup()
+exten => h,1,deadagi,fax.php ; Run sfftobmp and mail it
+
+Example with Clear Channel fax support:
+
+[handle_fax]
+exten => s,1,capicommand(resource,1-4) ; Assign resource PLCI (use controllers 1 to 4)
+exten => s,n,capicommand(receivefax,/tmp/${UNIQUEID}[,<stationid>,<headline>,<options>])
+exten => s,n,Hangup()
+exten => h,1,deadagi,fax.php ; Run sfftobmp and mail it
+
+
+Transmission of fax documents
+-----------------------------
+
+The transmission of the fax message is started using 'sendfax' capi command:
+
+  capicommand(sendfax,<filename>[,<stationid>,<headline>,<options>])
+
+  Parameters:
+    'filename'  - Contains the full path and file name to be sent, mandatory
+                  sendfax command automatically detects the type of file
+                  using the context of file.
+                  Supported formats:
+                    .sff - SFF file
+                    .txt - text file
+                    .cff - JPEG/T.43 (color/gray tone) coded file
+    'stationid' - station ID, optional
+    'headline'  - head line, optional
+    'options'   - fax options, optional
+                  'X' - use fax T.30 extended (default)
+                  'x' - do not use fax T.30 extended
+                  'f' - use Fine resolution
+                  'u' - activate support for Super/Ultra fine resolutions and paper formats
+                  't' - do not use T.85
+                  'e' - do not use ECM
+                  'm' - do not use MMR (T.6) coding
+                  'd' - do not use MR (2D) coding
+
+You need to start the call using the 'Dial' command in voice mode and change to transmission (reception)
+of the fax by 'sendfax'. Optionally, you can wait until the user entered a password using DTMF digits.
+
+Using resource ('resource' command) PLCI allows to transmit fax documents over IP using Clear Channel fax.
+The 'resource' command allocates one resource PLCI for IP connections only and does not perform any actions for
+E.1/T.1/S0/PSTN connections. This allows for safe use of 'resource' command in any context.
+
+Example:
+
+[dial_fax]
+exten => 1,1,Dial(capi/ISDN1/1234512345,20,G(handle_sendfax,s,1))
+
+[handle_sendfax]
+exten => s,1,capicommand(sendfax,/tmp/sendfax001.sff,1234 1234 1234,Outgoing Fax)
+exten => s,n,deadagi,faxlog.php ; Log result and schedule restart if necessary
+exten => s,n,Hangup
+
+
+Example with Clear Channel fax support:
+
+[handle_sendfax]
+exten => s,1,capicommand(resource,1-4) ; Assign resource PLCI
+exten => s,n,capicommand(sendfax,/tmp/sendfax001.sff,1234 1234 1234,Outgoing Fax)
+exten => s,n,deadagi,faxlog.php ; Log result and schedule restart if necessary
+exten => s,n,Hangup
+
+Results of fax transmission
+---------------------------
+
+After chan_capi completed the processing of the 'receivefax' or 'sendfax' commands, following variables are set:
+  FAXSTATUS     - Status of fax transmission
+                  0 - OK
+                  1 - Error
+  FAXREASON     - Value of B3 disconnect reason
+  FAXREASONTEXT - Decoded text of FAXREASON value
+  FAXRATE       - The baud rate of the fax connection
+  FAXRESOLUTION - Resolution of received fax message
+                  0 - standard
+                  1 - high
+  FAXFORMAT     - Format of received fax document
+                  0 - SFF (default, description in Annex B)
+                  1 - Plain fax format (modified Huffman coding)
+                  2 - PCX
+                  3 - DCX
+                  4 - TIFF
+                  5 - ASCII
+                  6 - Extended ANSI
+                  7 - Binary-File transfer
+                  8 - Native (CFF
+                              continuous-tone color and gray-scale T.4 Annex E using JPEG coding
+                              lossless color and gray-scale mode according to T.43)
+  FAXCFFFORMAT  - Valid if FAXFORMAT is set to 8 (native)
+                  1 - continuous tone color and gray-scale mode according to T.4 Annex E using JPEG coding
+                  2 - lossless color and gray-scale mode according to T.43 [7] using JBIG coding
+  FAXPAGES      - Number of pages received
+  FAXID         - The ID of the remote fax maschine
+

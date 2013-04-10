@@ -1,0 +1,187 @@
++===================================================================+
+|       QSIG Abstraction                                            |
++===================================================================+
+
++-------------------------------------------------------------------+
+|  QSIG supplementary services                                      |
++-------------------------------------------------------------------+
+
+The QSIG network differentiates between four different types of call transfers,
+two unassisted and two assisted.
+The type of invoked unassisted call transfer depends on the call state.
+The type of assisted call transfers depends on the type of the switching
+equipment Dialogic(R) Diva(R) interfaces as well.
+The coding of the messages and the type of the transfer invoked, depends
+on the QSIG dialect and on the vendor-specific implementation of QSIG dialect.
+
++-------------------------------------------------------------------+
+|  Use Diva QSIG abstraction with chan_capi                         |
++-------------------------------------------------------------------+
+
+To use Diva QSIG abstraction please add 'divaqsig=1' to configuration
+of CAPI controller (capi.conf).
+
++-------------------------------------------------------------------+
+|  QSIG abstraction                                                 |
++-------------------------------------------------------------------+
+
+Dialogic(R) Diva(R) System Release Software abstraction allows to write
+QSIG applications independent of the used QSIG dialect.
+
+Name and Display information elements
+  Name (Calling Pary Name, Called Party Name, Connected Party Name,
+  Busy Party Name) and Display information elementss are converted to protocol
+  independent format and delivered to (received from) application using
+  Diva manufacturer extensions. Information elements encoded as facility array
+  (for example in CONNECT_REQ) are converted in accordance with rules of active
+  QSIG protocol.
+
+Unassisted call transfer:
+  The application can use CAPI call deflection. The Diva System Release software 
+  will automatically translate the call deflection request in the appropriate 
+  QSIG primitives. The translation depends on the Diva System Release software 
+  configuration and on the call state.
+  You can invoke this feature in any call state, but the request may fail in
+  case the used switching equipment does not support the required service.
+
+Assisted call transfer:
+  The application can use CAPI Explicit Call Transfer (ECT). The Diva System Release 
+  software will automatically translate ECT in the appropriate QSIG primitive.
+  The translation depends on the Diva System Release configuration.
+
++-------------------------------------------------------------------+
+|  Conclusion                                                       |
++-------------------------------------------------------------------+
+If reviewed in short form, you can use any ETSI application with QSIG and without
+the need to change any code to access QSIG call transfers. There is no need to deal
+with details of the underlying network.
+The same is true not only for QSIG but for all supported signaling protocols.
+The same interface can be used to access basic and supplementary services for
+ETSI, QSIG, SS7 ISUP, 5ESS, R2, RBS/CAS, ...
+
++-------------------------------------------------------------------+
+|  QSIG path replacement                                            |
++-------------------------------------------------------------------+
+
+There are three parties involved in the path replacement procedure;
+The party that initiated the call (party A), the party that initially received and
+transferred the call (party B) and the party that finally received the
+call after the call transfer (party C).
+
+The goal of the call replacement procedure is to free switching equipment resources
+by the replacement of the chain A->B->C with chain A->C.
+To achieve this, party B will short cut the D-channel link between A and C and
+let A and C exchange D-channel messages. In most cases, party B will short
+cut the B-channel between A and C as well and preserve this connection until the path
+replacement is complete. If the path replacement will not proceed (not supported, ...),
+party B will preserve the D-channel and B-channel interconnections for the entire
+duration of the call.
+
+After party B completes the call transfer procedure, one transfer complete message
+will be sent (Diva System Release softwre configuration option) and will invoke the path
+replacement procedure (Diva System Release configuration option). As part of this procedure, 
+party A will prepare an alternative resource and send information about this resource over
+the D-channel to C through B.
+After the information about the alternative resource is received, C will establish a new call
+directly from C to A and replace A->B->C by C->A (A->B->C still running in parallel).
+After the new connection is established, A and C will establish a new B-channel connection 
+and will exchange D-channel messages over B and release connections A->B and B->C.
+After the release is complete, C->A is preserved during the duration of the call.
+
+The Diva System Release software supports all three parties A, B, and C in the above mentioned
+path replacement procedure.
+
++-------------------------------------------------------------------+
+|  Support at party A and C endpoints                               |
++-------------------------------------------------------------------+
+
+The support at A and C endpoints is transparent to the applications.
+The Diva System Release software will replace one connection with another in 
+a fully transparent way to the application.
+The data streaming between the application and the bearer resource will not be interrupted
+during this operation. Only one notification about the change of the B-channel and
+about the completion of the path replacement procedure is provided to the application but
+does not require any action from the application (in certain environments
+applications will use this notification to issue RESET_B3 REQ and restart the voice
+message if any. PBX applications do not need to perform any action).
+
+Please note that party C responds to the call replacement procedure only if the change of the
+connection is supported by the underlying protocol. This change is not possible if the fax or
+modem session is already in progress. In this case, C will ignore the path replacement and
+the chain A->B->C will be preserved for the entire duration of the call.
+The same is true if the path replacement procedure fails for any reason.
+
+The M-Board is required to provide the path replacement operation at A and B and it is
+responsible for moving the call between different connections transparently for application.
+The path replacement can be performed only between Dialogic(R) Diva(R) interfaces 
+that belong to the same M-Board.
+
++-------------------------------------------------------------------+
+|  Support at the party B endpoint                                  |
++-------------------------------------------------------------------+
+
+Party B is the party that uses ECT to perform the assisted QSIG call transfer.
+The type of call transfer and the messages sent after the call transfer is completed
+are specified by the Diva System Release software configuration. The software detects if 
+compatible QSIG dialects are used for both parties of ECT and will automatically 
+establish the D-channel bridge.
+The application is responsible to establish the B-channel bridge. The best practice is to
+establish the B-channel bridge (using CAPI line interconnect command) before issuing
+the CAPI ECT command. The Dialogic(R) Diva(R) CAPI will atomatically maintain the D-channel bridge.
+
+If the M-Board is used at the party B endpoint, it is possible to activate "ECT Emulation".
+If active, the M-Board will automatically establish and maintain the B-channel and D-channel bridge
+once the ECT command is sent by the application. In this case, there is no need to maintain the B-channel
+bridge by the application. The M-Board will maintain all necessary resources until the path
+replacement procedure is completed or for the entire duration of the call.
+This option is available only for calls that belong to the same M-Board.
+
++-------------------------------------------------------------------+
+|  Call state of involved in the ECT calls                          |
++-------------------------------------------------------------------+
+
+In case of QSIG, it is not necessary to put one of the calls, involved in the ECT, on hold.
+Moreover, it is possible to invoke the ECT if the consultation call is in alerted state
+(if supported by the switching equipment).
+To achieve this, independent from the state of the primary and of the consultation call operation
+of the ECT, it is necessary to set the CAPIECTPLCI variable to PLCI (getplci commang provides it in
+CAPIPLCI variable) of the primary call before invoking the ECT.
+
+Example: The application accepts one call, creates the consultation call and once the alert is 
+received, the consultation call starts the playback of message on the first call. After an 
+additional command is received, the application proceeds with ECT, independent from the state
+of the consultation call.
+It is even possible to play the message to the first call until the path replacement is completed
+and parties A and C are connected directly.
+
+ECT Example:
+/////////////////////////////////////////////////////////////////////
+[macro-capiect]
+; Activate suppressor of ambient noise for consultation call
+exten => s,1,capicommand(noisesuppressor,yes)
+; Invoke ECT command
+exten => s,n,capicommand(ect)
+
+[isdn-in]
+; Send progress message on incoming call
+exten => 12345,1,Progress()
+exten => 12345,n,Set(TIMEOUT(digit)=1)    ; Set Digit Timeout to 5 seconds
+exten => 12345,n,Set(TIMEOUT(response)=5) ; Set Response Timeout to 10 seconds
+; Play message to incoming call using early media mode
+exten => 12345,n,Playback(demo-enterkeywords,noanswer,us)
+; Accept incoming call
+exten => 12345,n,Answer
+; Activate suppressor of ambient noises for incoming call
+exten => 12345,n,capicommand(noisesuppressor,yes)
+; Save PLCI of incoming call to CAPIPLCI variable
+exten => 12345,n,capicommand(getplci)
+; Set CAPIECTPLCI variable to PLCI of incoming call
+; and allow to export this variable to consultation call
+exten => 12345,n,Set(_CAPIECTPLCI=${CAPIPLCI})
+; Create consultation call and invoke ECT
+; ECT procedure will detect CAPIECTPLCI is set and use saved in this variable value
+; to identify the ECT party and invoke ECT independent from the state of the primary call
+exten => 12345,n,Dial(CAPI/ISDN1/100,10,M(capiect))
+exten => 12345,n,Hangup()
+/////////////////////////////////////////////////////////////////////
+

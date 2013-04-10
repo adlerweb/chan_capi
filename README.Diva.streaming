@@ -1,0 +1,81 @@
++===================================================================+
+|       Diva streaming                                              |
++-------------------------------------------------------------------+
+|                                                                   |
+|       What is Diva streaming                                      |
+|       How to activate Diva streaming support in chan_capi         |
+|       Performance metrics on chan_capi                            |
+|       Supported hardware                                          |
+|                                                                   |
++===================================================================+
+
++-------------------------------------------------------------------+
+| WHAT IS DIVA STREAMING                                            |
++-------------------------------------------------------------------+
+
+Diva streaming is one extension to Diva IDI interface which provides:
+  Reduction of host load
+  Reduction of delay and delay variance of data stream
+
+This achieved by:
+  Use of individual and independent logical BUS master DMA channel
+    for every data stream (for every PLCI)
+  Data transfer without copy operations and without system calls/context switches
+  Available for user mode and for kernel mode applications
+
++-------------------------------------------------------------------+
+| HOW TO ACTIVATE DIVA STREAMING SUPPORT IN CHAN_CAPI               |
++-------------------------------------------------------------------+
+
+To activate Diva streaming support in chan_capi please compile
+chan_capi with MAKE variable DIVA_STREAMING set to one:
+
+  make DIVA_STREAMING=1
+
+and install new chan_capi module:
+
+  make install DIVA_STREAMING=1
+
+chan_capi automatically detects if Diva streaming is supported by available Diva hardware.
+
+You can disable use of Diva streaming at run time (without need to re-compile of chan_capi)
+if you set "nodivastreaming" variable in "[general]" section of "capi.conf" to one:
+
+[general]
+nodivastreaming=1
+
++-------------------------------------------------------------------+
+| PERFORMANCE METRICS ON CHAN_CAPI                                  |
++-------------------------------------------------------------------+
+
+Hardware:      8 x 2.8GHz Xeon, 8GByte memory, Debian lenny 64Bit
+Diva hardware: Dialogic Diva V-8PRI PCIe FS v1
+Test:          240 channels GSM voice streaming 
+
+Voice transcoding by Asterisk and data exchange using CAPI:
+  System load 50%
+  Voice delay (additional): 20 mSec, delay variance 10mSec
+
+Voice transcoding by Astrisk and data exchange using Diva streaming:
+  System load 10%
+  Voice delay (additional): 2 mSec, delay variance 1 mSec
+
+Voice transcoding by Diva and data exchange using Diva streaming:
+  System load 2%
+  Voice delay (additional): 2 mSec, delay variance 1 mSec
+
++-------------------------------------------------------------------+
+| SUPPORTED HARDWARE                                                |
++-------------------------------------------------------------------+
+
+Diva streaming is supported by following hardware:
+  Dialogic Diva V-4PRI/E1/T1-120 PCI v1
+  Dialogic Diva 4PRI/E1/T1-120 PCI v1
+  Dialogic Diva V-2PRI/E1/T1-60 PCI v1
+  Dialogic Diva 2PRI/E1/T1-60 PCI v1
+  Dialogic Diva V-4PRI PCIe HS v1
+  Dialogic Diva V-2PRI PCIe HS v1
+  Dialogic Diva V-1PRI PCIe HS v1
+  Dialogic Diva V-4PRI PCIe FS v1
+  Dialogic Diva V-8PRI PCIe FS v1
+

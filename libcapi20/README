@@ -1,0 +1,38 @@
+This Library supports remote CAPI over an TCP/IP network.
+
+On the remote machine you need to have running
+ kernelcapi
+ libcapi20
+ rcapid
+
+On the local machine you just need this libcapi20 and
+your application.
+
+For remote configuration the library looks for
+  ~/.capi20rc
+and if it doesn't exist it looks for
+  /etc/capi20.conf
+
+To set the remote machine, the above file need to have
+the following line
+  REMOTE <remote hostname|ip-address> <remote port>
+
+If this doesn't exist, the library tries the old, normal way
+of using the local /dev/capi20.
+
+
+Trace-Feature:
+If the CAPI messages shall be logged, add the following entries to
+the configuration file:
+  TRACEFILE </path/to/tracefile>
+  TRACELEVEL 0|1|2
+
+The tracelevel configured which CAPI messages shall be logged:
+ 0 = none
+ 1 = signaling messages
+ 2 = all (including data messages)
+
+---
+Armin Schindler
+armin@melware.de
+
