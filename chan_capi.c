@@ -536,8 +536,14 @@ static void capi_channel_task(struct ast_channel *c, int task)
 	chan_for_task = c;
 	channel_task = task;
 
+	
+	#ifdef CC_AST_HAS_VERSION_11_0
+	cc_verbose(4, 1, VERBOSE_PREFIX_4 "%s: set channel task to %d\n",
+                ast_channel_name(c), task);
+	#else 
 	cc_verbose(4, 1, VERBOSE_PREFIX_4 "%s: set channel task to %d\n",
 		c->name, task);
+	#endif
 }
 
 /*
@@ -1038,12 +1044,21 @@ static int pbx_capi_send_digit(struct ast_channel *c, char digit)
 		return -1;
 	}
 
+	#ifdef CC_AST_HAS_VERSION_11_0
+	cc_verbose(3, 1, VERBOSE_PREFIX_3 "%s: send_digit '%c' in state %d(%d)\n",
+                i->vname, digit, i->state, ast_channel_state(c));
+	#else
 	cc_verbose(3, 1, VERBOSE_PREFIX_3 "%s: send_digit '%c' in state %d(%d)\n",
 		i->vname, digit, i->state, c->_state);
+	#endif
 
 	cc_mutex_lock(&i->lock);
 
+	#ifdef CC_AST_HAS_VERSION_11_0
+	if ((ast_channel_state(c) == AST_STATE_DIALING) &&
+	#else
 	if ((c->_state == AST_STATE_DIALING) &&
+	#endif
 	    (i->state != CAPI_STATE_DISCONNECTING)) {
 		if (!(i->isdnstate & CAPI_ISDN_STATE_ISDNPROGRESS)) {
 			did[0] = digit;
@@ -1325,7 +1340,11 @@ void capi_activehangup(struct capi_pvt *i, int state)
 	const char *cause;
 
 	if (c) {
-		i->cause = c->hangupcause;
+		#ifdef CC_AST_HAS_VERSION_11_0
+			i->cause = ast_channel_hangupcause(c);
+		#else
+			i->cause = c->hangupcause;
+		#endif
 		if ((cause = pbx_builtin_getvar_helper(c, "PRI_CAUSE"))) {
 			i->cause = atoi(cause);
 		}
@@ -1429,7 +1448,11 @@ static int pbx_capi_hangup(struct ast_channel *c)
 	}
 
 	i->owner = NULL;
+	#ifdef CC_AST_HAS_VERSION_11_0
+	ast_channel_tech_pvt_set(c, NULL); 	
+	#else
 	CC_CHANNEL_PVT(c) = NULL;
+	#endif
 
 	cc_mutex_unlock(&i->lock);
 
@@ -1461,15 +1484,26 @@ static void pbx_capi_call_build_calling_party_number(
 	int callernplan;
 
 #ifdef CC_AST_HAS_VERSION_1_8
+	#ifdef CC_AST_HAS_VERSION_11_0
+	if (ast_channel_connected(c)->id.number.valid) {
+		CLIR = ast_channel_connected(c)->id.number.presentation; 
+                callernplan =  ast_channel_connected(c)->id.number.plan & 0x7f;
+	#else
 	if (c->connected.id.number.valid) {
 		CLIR = c->connected.id.number.presentation;
 		callernplan = c->connected.id.number.plan & 0x7f;
+	#endif
 	} else {
 		CLIR = 0;
 		callernplan = 0;
 	}
+	#ifdef CC_AST_HAS_VERSION_11_0
+	if (ast_channel_connected(c)->id.number.valid && !ast_strlen_zero(ast_channel_connected(c)->id.number.str)) {
+		ast_copy_string(callerid, ast_channel_connected(c)->id.number.str, sizeof(callerid));
+	#else
 	if (c->connected.id.number.valid && !ast_strlen_zero(c->connected.id.number.str)) {
 		ast_copy_string(callerid, c->connected.id.number.str, sizeof(callerid));
+	#endif
 	} else {
 		memset(callerid, 0, sizeof(callerid));
 	}
@@ -1503,7 +1537,11 @@ static void pbx_capi_call_build_calling_party_number(
 	strncpy(&calling[3], callerid, max_calling - 4);
 
 	cc_verbose(1, 1, VERBOSE_PREFIX_2 "%s: Call %s %s%s (pres=0x%02x, ton=0x%02x)\n",
+		#ifdef CC_AST_HAS_VERSION_11_0
+		i->vname, ast_channel_name(c), i->doB3 ? "with B3 ":" ",
+		#else
 		i->vname, c->name, i->doB3 ? "with B3 ":" ",
+		#endif
 		i->doOverlap ? "overlap":"", CLIR, callernplan);
 }
 

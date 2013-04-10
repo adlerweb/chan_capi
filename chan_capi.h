@@ -136,7 +136,11 @@ static inline unsigned int read_capi_dword(const void *m)
 /*
  * definitions for nice compatibility
  */
-#define CC_CHANNEL_PVT(c) (c)->tech_pvt
+#ifdef CC_AST_HAS_VERSION_11_0
+	#define CC_CHANNEL_PVT(c) ast_channel_tech_pvt(c)
+#else
+	#define CC_CHANNEL_PVT(c) (c)->tech_pvt
+#endif
 #define CC_BRIDGE_RETURN enum ast_bridge_result
 
 #ifdef CC_AST_HAS_UNION_DATA_IN_FRAME
