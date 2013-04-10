@@ -1633,7 +1633,11 @@ static int pbx_capi_call(struct ast_channel *c, char *idest, int timeout)
 
 	i->peer = cc_get_peer_link_id(pbx_builtin_getvar_helper(c, "CAPIPEERLINKID"));
 	i->outgoing = 1;
+	#ifdef CC_AST_HAS_VERSION_11_0
+	i->transfercapability = ast_channel_transfercapability(c);
+	#else
 	i->transfercapability = c->transfercapability;
+	#endif
 	i->isdnstate |= CAPI_ISDN_STATE_PBX;
 	i->state = CAPI_STATE_CONNECTPENDING;
 	ast_setstate(c, AST_STATE_DIALING);
@@ -2018,11 +2022,20 @@ static struct ast_frame *pbx_capi_read(struct ast_channel *c)
 /* Work around problem with recognition of fast sequences of events,
  * see main/channel.c for details
  */
-			if (!(ast_test_flag(c, AST_FLAG_END_DTMF_ONLY) ||
-						ast_test_flag(c, AST_FLAG_EMULATE_DTMF) ||
-						ast_test_flag(c, AST_FLAG_IN_DTMF))) {
-				ast_set_flag(c, AST_FLAG_IN_DTMF);
+			#ifdef CC_AST_HAS_VERSION_11_0
+			if (!(ast_test_flag(ast_channel_flags(c), AST_FLAG_END_DTMF_ONLY) ||
+						ast_test_flag(ast_channel_flags(c), AST_FLAG_EMULATE_DTMF) ||
+						ast_test_flag(ast_channel_flags(c), AST_FLAG_IN_DTMF))) {
+				ast_set_flag(ast_channel_flags(c), AST_FLAG_IN_DTMF);
+				ast_channel_sending_dtmf_tv_set(c, ast_tvsub(ast_tvnow(),ast_tv(0,250*1000)));
+			#else
+			
+                       if (!(ast_test_flag(c, AST_FLAG_END_DTMF_ONLY) ||
+                                               ast_test_flag(c, AST_FLAG_EMULATE_DTMF) ||
+                                               ast_test_flag(c, AST_FLAG_IN_DTMF))) {
+                               ast_set_flag(c, AST_FLAG_IN_DTMF);
 				c->dtmf_tv = ast_tvsub(ast_tvnow(),ast_tv(0,250*1000));
+			#endif
 				if (!f->len)
 						f->len = 100;
 			}
@@ -2054,7 +2067,11 @@ static int pbx_capi_fixup(struct ast_channel *oldchan, struct ast_channel *newch
 	struct capi_pvt *i = CC_CHANNEL_PVT(newchan);
 
 	cc_verbose(3, 1, VERBOSE_PREFIX_2 "%s: %s fixup now %s\n",
+		#ifdef CC_AST_HAS_VERSION_11_0
+		i->vname, ast_channel_name(oldchan), ast_channel_name(newchan));
+		#else
 		i->vname, oldchan->name, newchan->name);
+		#endif
 
 	cc_mutex_lock(&i->lock);
 	i->owner = newchan;
@@ -2162,7 +2179,11 @@ static int pbx_capi_bridge_transfer(
 		if (ret == 2) {	
 			/* don't do bridge - call transfer is active */
 			cc_verbose(3, 1, VERBOSE_PREFIX_2 "%s:%s cancelled bridge (path replacement was sent) for %s and %s\n",
+				   #ifdef CC_AST_HAS_VERSION_11_0
+				   i0->vname, i1->vname, ast_channel_name(c0), ast_channel_name(c1));
+				   #else
 				   i0->vname, i1->vname, c0->name, c1->name);
+				   #endif
 		}
 	} else {
 		/* standard ECT */
@@ -2310,7 +2331,11 @@ static CC_BRIDGE_RETURN pbx_capi_bridge(
 	CC_BRIDGE_RETURN ret = AST_BRIDGE_COMPLETE;
 
 	cc_verbose(3, 1, VERBOSE_PREFIX_2 "%s:%s Requested native bridge for %s and %s\n",
+		#ifdef CC_AST_HAS_VERSION_11_0
+		i0->vname, i1->vname, ast_channel_name(c0), ast_channel_name(c1));
+		#else
 		i0->vname, i1->vname, c0->name, c1->name);
+		#endif
 
 	if ((i0->isdnstate & CAPI_ISDN_STATE_ECT) ||
 	    (i1->isdnstate & CAPI_ISDN_STATE_ECT)) {
@@ -2477,11 +2502,18 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 		}
 #endif
 	}
+	
+	#ifdef CC_AST_HAS_VERSION_11_0
+	ast_channel_tech_pvt_set(tmp, i);
 
+	ast_channel_callgroup_set(tmp, i->callgroup);
+	ast_channel_pickupgroup_set(tmp, i->pickupgroup);
+	#else
 	CC_CHANNEL_PVT(tmp) = i;
 
 	tmp->callgroup = i->callgroup;
 	tmp->pickupgroup = i->pickupgroup;
+	#endif
 
 
 #if 0
@@ -2503,26 +2535,48 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 #else
 	if ((i->rtpcodec = (capi_controllers[i->controller]->rtpcodec & i->capability))) {
 		i->bproto = CC_BPROTO_VOCODER;
+		#ifdef CC_AST_HAS_VERSION_11_0
+		cc_add_formats(ast_channel_nativeformats(tmp), i->rtpcodec);
+		#else
 		cc_add_formats(tmp->nativeformats, i->rtpcodec);
+		#endif
 	} else {
 		i->bproto = CC_BPROTO_TRANSPARENT;
+		#ifdef CC_AST_HAS_VERSION_11_0
+		cc_add_formats(ast_channel_nativeformats(tmp), capi_capability);
+		#else
 		cc_add_formats(tmp->nativeformats, capi_capability);
+		#endif
 	}
 	fmt = cc_set_best_codec(tmp);
 	i->codec = fmt;
 #endif
 
+	#ifdef CC_AST_HAS_VERSION_11_0
+	ast_channel_tech_set(tmp, &capi_tech);
+	#else
 	tmp->tech = &capi_tech;
+	#endif
 
 
 	cc_verbose(3, 1, VERBOSE_PREFIX_2 "%s: setting format %s - %s%s\n",
 		i->vname, cc_getformatname(fmt),
 		ast_getformatname_multiple(alloca(80), 80,
+		#ifdef CC_AST_HAS_VERSION_11_0
+		ast_channel_nativeformats(tmp)),
+		#else
 		tmp->nativeformats),
+		#endif
 		(i->bproto == CC_BPROTO_VOCODER) ? "VOCODER" : ((i->rtp) ? " (RTP)" : ""));
 
 	if (!ast_strlen_zero(i->cid)) {
-#ifdef CC_AST_HAS_VERSION_1_8
+#ifdef CC_AST_HAS_VERSION_11_0
+		ast_free (ast_channel_connected(tmp)->id.number.str);
+                ast_channel_connected(tmp)->id.number.valid = 1;
+                ast_channel_connected(tmp)->id.number.str = ast_strdup(i->cid);
+                ast_channel_connected(tmp)->id.number.plan = i->cid_ton;
+
+#elif defined CC_AST_HAS_VERSION_1_8
 		ast_free (tmp->connected.id.number.str);
 		tmp->connected.id.number.valid = 1;
 		tmp->connected.id.number.str = ast_strdup(i->cid);
@@ -2533,7 +2587,10 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 #endif
 	}
 	if (!ast_strlen_zero(i->dnid)) {
-#ifdef CC_AST_HAS_VERSION_1_8
+#ifdef CC_AST_HAS_VERSION_11_0
+		ast_free (ast_channel_dialed(tmp)->number.str);
+                ast_channel_dialed(tmp)->number.str  = ast_strdup (i->dnid);
+#elif defined CC_AST_HAS_VERSION_1_8
 		ast_free (tmp->dialed.number.str);
 		tmp->dialed.number.str  = ast_strdup (i->dnid);
 #else
@@ -2541,7 +2598,9 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 		tmp->cid.cid_dnid = ast_strdup(i->dnid);
 #endif
 	}
-#ifdef CC_AST_HAS_VERSION_1_8
+#ifdef CC_AST_HAS_VERSION_11_0
+	ast_channel_dialed(tmp)->number.plan = i->cid_ton;
+#elif defined CC_AST_HAS_VERSION_1_8
 	tmp->dialed.number.plan = i->cid_ton;
 #else
 	tmp->cid.cid_ton = i->cid_ton;
@@ -2563,7 +2622,11 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 #endif
 
 #ifdef CC_AST_HAS_STRINGFIELD_IN_CHANNEL
+	#ifdef CC_AST_HAS_VERSION_11_0
+	#error todo
+	#else
 	ast_string_field_set(tmp, language, i->language);
+	#endif
 #else
 	cc_copy_string(tmp->language, i->language, sizeof(tmp->language));
 #endif
