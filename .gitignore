@@ -1,0 +1,7 @@
+config.h
+*.so
+*.o
+libcapi20/*.o
+divastreaming/*.o
+divastatus/*.o
+divaverbose/*.o
