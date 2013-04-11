@@ -194,7 +194,11 @@ struct capi_pvt *capi_mknullif(struct ast_channel *c, unsigned long long control
 	cc_mutex_init(&tmp->lock);
 	ast_cond_init(&tmp->event_trigger, NULL);
 	
+	#ifdef CC_AST_HAS_VERSION_11_0
+	snprintf(tmp->name, sizeof(tmp->name) - 1, "%s-NULLPLCI", (c != 0) ? ast_channel_name(c) : "BRIDGE");
+	#else
 	snprintf(tmp->name, sizeof(tmp->name) - 1, "%s-NULLPLCI", (c != 0) ? c->name : "BRIDGE");
+	#endif
 	snprintf(tmp->vname, sizeof(tmp->vname) - 1, "%s", tmp->name);
 
 	tmp->channeltype = CAPI_CHANNELTYPE_NULL;
