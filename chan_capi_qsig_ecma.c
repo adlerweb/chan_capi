@@ -73,7 +73,9 @@ void cc_qsig_op_ecma_isdn_namepres(struct cc_qsig_invokedata *invoke, struct cap
 			break;
 	}
 	#ifdef CC_AST_HAS_VERSION_11_0
+	struct ast_party_caller temp_calname_store;
 	struct ast_party_caller *temp_calname;
+	temp_calname = &temp_calname_store;
 	#endif
 		
 	switch (invoke->type) {

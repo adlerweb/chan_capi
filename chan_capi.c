@@ -5104,8 +5104,9 @@ static void capidev_handle_diva_signaling_manufacturer_infications(struct capi_p
 			if (length != 0) {
 				capidev_read_name_from_diva_manufacturer_infications (data, &data[length], buffer, sizeof(buffer), &octet3a, i->vname, "Calling Party");
 #ifdef CC_AST_HAS_VERSION_11_0
-				//@TODO Huh?
+				struct ast_party_caller temp_cinstr_store;
 				struct ast_party_caller *temp_cinstr;
+				temp_cinstr = &temp_cinstr_store;
 				temp_cinstr = ast_channel_caller(i->owner);
 				temp_cinstr->id.name.valid = 1;
 				ast_free(temp_cinstr->id.name.str);
@@ -5664,10 +5665,12 @@ static void capidev_handle_connect_indication(
 					Preserve original plan if translation is not required or done in dial plan
 					*/
 				if (capi_national_prefix[0]      == 0 &&
-						capi_international_prefix[0] == 0 &&
-						capi_subscriber_prefix[0]    == 0) {
+					capi_international_prefix[0] == 0 &&
+					capi_subscriber_prefix[0]    == 0) {
 					#ifdef CC_AST_HAS_VERSION_11_0
+					struct ast_party_caller temp_accp_store;
 					struct ast_party_caller *temp_accp;
+					temp_accp = &temp_accp_store;
 					temp_accp = ast_channel_caller(i->owner);
 					temp_accp->id.number.plan = callernplan;
 					ast_channel_caller_set(i->owner, temp_accp);
@@ -5677,7 +5680,9 @@ static void capidev_handle_connect_indication(
 					effective_cid = CID;
 				}
 				#ifdef CC_AST_HAS_VERSION_11_0
+				struct ast_party_caller temp_accpress_store;
 				struct ast_party_caller *temp_accpress;
+				temp_accpress = &temp_accpress_store;
 				temp_accpress = ast_channel_caller(i->owner);
 				temp_accpress->id.number.presentation = callpres;
 				ast_channel_caller_set(i->owner, temp_accpress);
@@ -5691,7 +5696,9 @@ static void capidev_handle_connect_indication(
 					 ast_set_callerid(i->owner, effective_cid, NULL, effective_cid);
 					*/
 				#ifdef CC_AST_HAS_VERSION_11_0
+				struct ast_party_caller temp_idfoo_store;
 				struct ast_party_caller *temp_idfoo;
+				temp_idfoo = &temp_idfoo_store;
 				temp_idfoo = ast_channel_caller(i->owner);
 				temp_idfoo->id.number.valid = 1;
 				ast_free(temp_idfoo->id.number.str);
