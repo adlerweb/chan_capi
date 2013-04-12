@@ -96,6 +96,44 @@ static char mandescr_capicommand[] =
 
 void pbx_capi_ami_register(void)
 {
+	#ifdef CC_AST_HAS_VERSION_11_0
+	struct ast_module* module = ast_module_info->self;
+	
+	capiChatListRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATLIST,
+		EVENT_FLAG_REPORTING,
+		pbx_capi_ami_capichat_list,
+		module,
+		"List participants in a conference",
+		mandescr_capichatlist) == 0;
+
+	capiChatMuteRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATMUTE,
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_mute,
+		module,
+		"Mute a conference user",
+		mandescr_capichatmute) == 0;
+
+	capiChatUnmuteRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATUNMUTE,
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_unmute,
+		module,
+		"Unmute a conference user",
+		mandescr_capichatunmute) == 0;
+
+	capiChatRemoveRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATREMOVE,
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_remove,
+		module,
+		"Remove a conference user",
+		mandescr_capichatremove) == 0;
+
+	capiCommandRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CAPICOMMAND,
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capicommand,
+		module,
+		"Exec capicommand",
+		mandescr_capicommand) == 0;
+	#else
 	capiChatListRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATLIST,
 		EVENT_FLAG_REPORTING,
 		pbx_capi_ami_capichat_list,
@@ -125,6 +163,7 @@ void pbx_capi_ami_register(void)
 		pbx_capi_ami_capicommand,
 		"Exec capicommand",
 		mandescr_capicommand) == 0;
+	#endif
 }
 
 void pbx_capi_ami_unregister(void)
@@ -232,7 +271,11 @@ static int pbx_capi_ami_capichat_list(struct mansession *s, const struct message
 				total,
 				(cidVisual != 0) ? cidVisual : "?",
 				(callerNameVisual != 0) ? callerNameVisual : "?",
+				#ifdef CC_AST_HAS_VERSION_11_0
+				ast_channel_name(c),
+				#else
 				c->name,
+				#endif
 				(isMemberOperator != 0) ? "Yes" : "No",
 				(isCapiChatMemberListener != 0) ? "Listen only" : "Talk and listen" /* "Talk only" */,
 				(isCapiChatMostRecentMember != 0) ? "Yes" : "No",
@@ -401,7 +444,11 @@ void pbx_capi_chat_join_event(struct ast_channel* c, const struct capichat_s * r
 		"Conferencenum: %u\r\n"
 		"CallerIDnum: %s\r\n"
 		"CallerIDname: %s\r\n",
+		#ifdef CC_AST_HAS_VERSION_11_0
+		ast_channel_name(c), ast_channel_uniqueid(c),
+		#else
 		c->name, c->uniqueid,
+		#endif
 		pbx_capi_chat_get_room_name(room),
 		pbx_capi_chat_get_room_number(room),
 		pbx_capi_get_cid (c, "<unknown>"),
@@ -425,7 +472,11 @@ void pbx_capi_chat_leave_event(struct ast_channel* c,
 		"CallerIDNum: %s\r\n"
 		"CallerIDName: %s\r\n"
 		"Duration: %ld\r\n",
+		#ifdef CC_AST_HAS_VERSION_11_0
+		ast_channel_name(c), ast_channel_uniqueid(c),
+		#else
 		c->name, c->uniqueid,
+		#endif
 		pbx_capi_chat_get_room_name(room),
 		pbx_capi_chat_get_room_number(room),
 		pbx_capi_get_cid (c, "<unknown>"),
