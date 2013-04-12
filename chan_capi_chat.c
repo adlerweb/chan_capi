@@ -4,6 +4,7 @@
  * Copyright (C) 2005-2009 Cytronics & Melware
  *
  * Armin Schindler <armin@melware.de>
+ * 2013 Florian Knodt <adlerweb@adlerweb.info>
  * 
  * This program is free software and may be modified and 
  * distributed under the terms of the GNU Public License.

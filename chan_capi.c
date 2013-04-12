@@ -9,6 +9,7 @@
  * Copyright (C) 2002-2005 Junghanns.NET GmbH
  *
  * Klaus-Peter Junghanns <kapejod@ns1.jnetdns.de>
+ * 2013 Florian Knodt <adlerweb@adlerweb.info>
  *
  * This program is free software and may be modified and 
  * distributed under the terms of the GNU Public License.

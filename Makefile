@@ -6,6 +6,7 @@
 # Copyright (C) 2005-2009 Cytronics & Melware
 # 
 # Armin Schindler <armin@melware.de>
+# 2013 Florian Knodt <adlerweb@adlerweb.info>
 # 
 # Reworked, but based on the work of
 # Copyright (C) 2002-2005 Junghanns.NET GmbH

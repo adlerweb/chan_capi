@@ -1,6 +1,7 @@
 /*
  *
   Copyright (c) Dialogic, 2009.
+ * 2013 Florian Knodt <adlerweb@adlerweb.info>
  *
   This source file is supplied for the use with
   Dialogic range of DIVA Server Adapters.

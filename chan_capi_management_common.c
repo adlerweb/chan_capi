@@ -1,6 +1,7 @@
 /*
  *
   Copyright (c) Dialogic (R) 2009 - 2010
+ * 2013 Florian Knodt <adlerweb@adlerweb.info>
  *
   This source file is supplied for the use with
   Eicon Networks range of DIVA Server Adapters.

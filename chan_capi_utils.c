@@ -6,6 +6,7 @@
  * Armin Schindler <armin@melware.de>
  * 
  * capi_sendf() by Eicon Networks / Dialogic
+ * 2013 Florian Knodt <adlerweb@adlerweb.info>
  *
  * This program is free software and may be modified and 
  * distributed under the terms of the GNU Public License.
