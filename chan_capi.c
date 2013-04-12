@@ -2629,6 +2629,7 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 #ifdef CC_AST_HAS_STRINGFIELD_IN_CHANNEL
 	#ifdef CC_AST_HAS_VERSION_11_0
 	//@TODO FIXME - for now ignore language
+	
 	//ast_string_field_set(ast_channel_tech_pvt(tmp), language, i->language); 
 	#else
 	ast_string_field_set(tmp, language, i->language);
@@ -8577,40 +8578,36 @@ static void supported_sservices(struct cc_capi_controller *cp)
 	return;
 }
 
-#ifdef CC_AST_HAS_VERSION_11_0
-	//@todo huh?
-#else
-
-	#ifndef CC_AST_HAS_VERSION_10_0
-	const
-	#endif
-	struct ast_channel_tech capi_tech = {
-		.type = channeltype,
-		.description = tdesc,
-	#ifndef CC_AST_HAS_VERSION_10_0
-		.capabilities = AST_FORMAT_ALAW,
-	#endif
-		.requester = pbx_capi_request,
-	#ifdef CC_AST_HAS_VERSION_1_4
-		.send_digit_begin = pbx_capi_send_digit_begin,
-		.send_digit_end = pbx_capi_send_digit,
-	#else
-		.send_digit = pbx_capi_send_digit,
-	#endif
-		.send_text = pbx_capi_qsig_sendtext,
-		.call = pbx_capi_call,
-		.hangup = pbx_capi_hangup,
-		.answer = pbx_capi_answer,
-		.read = pbx_capi_read,
-		.write = pbx_capi_write,
-		.bridge = pbx_capi_bridge,
-		.exception = NULL,
-		.indicate = pbx_capi_indicate,
-		.fixup = pbx_capi_fixup,
-		.setoption = NULL,
-		.devicestate = pbx_capi_devicestate,
-	};
+//@TODO Check for Asterisk 11
+#ifndef CC_AST_HAS_VERSION_10_0
+const
 #endif
+struct ast_channel_tech capi_tech = {
+	.type = channeltype,
+	.description = tdesc,
+#ifndef CC_AST_HAS_VERSION_10_0
+	.capabilities = AST_FORMAT_ALAW,
+#endif
+	.requester = pbx_capi_request,
+#ifdef CC_AST_HAS_VERSION_1_4
+	.send_digit_begin = pbx_capi_send_digit_begin,
+	.send_digit_end = pbx_capi_send_digit,
+#else
+	.send_digit = pbx_capi_send_digit,
+#endif
+	.send_text = pbx_capi_qsig_sendtext,
+	.call = pbx_capi_call,
+	.hangup = pbx_capi_hangup,
+	.answer = pbx_capi_answer,
+	.read = pbx_capi_read,
+	.write = pbx_capi_write,
+	.bridge = pbx_capi_bridge,
+	.exception = NULL,
+	.indicate = pbx_capi_indicate,
+	.fixup = pbx_capi_fixup,
+	.setoption = NULL,
+	.devicestate = pbx_capi_devicestate,
+};
 
 /*
  * register at CAPI interface
