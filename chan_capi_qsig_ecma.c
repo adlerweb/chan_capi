@@ -72,10 +72,20 @@ void cc_qsig_op_ecma_isdn_namepres(struct cc_qsig_invokedata *invoke, struct cap
 			nametype = "BUSY NAME";
 			break;
 	}
+	#ifdef CC_AST_HAS_VERSION_11_0
+	struct ast_party_caller *temp_calname;
+	#endif
 		
 	switch (invoke->type) {
 		case 0:	/* Calling Name */
-#ifdef CC_AST_HAS_VERSION_1_8
+#ifdef CC_AST_HAS_VERSION_11_0
+				//@TODO Huh?
+                               temp_calname = ast_channel_caller(i->owner);
+                               temp_calname->id.name.valid = 1;
+                               ast_free(temp_calname->id.name.str);
+                               temp_calname->id.name.str = ast_strdup(callername);
+                               ast_channel_caller_set(i->owner, temp_calname);
+#elif defined CC_AST_HAS_VERSION_1_8
 			/* ast_set_callerid updates CDR, but __ast_pbx_run updates CDR too.
 					__ast_pbx_run does not uses the channel lock and this results in destruction
 					of CDR list
@@ -421,7 +431,12 @@ void cc_qsig_encode_ecma_calltransfer(unsigned char * buf, unsigned int *idx, st
 			
 			if (ii) {
 				/* send callers name to user B */
-#ifdef CC_AST_HAS_VERSION_1_8
+#ifdef CC_AST_HAS_VERSION_11_0
+				if (ast_channel_caller(ii->owner)->id.name.valid ) {
+					name = ast_channel_caller(ii->owner)->id.name.str;
+					namelength = strlen(name);
+				}
+#elif defined CC_AST_HAS_VERSION_1_8
 				if (ii->owner->caller.id.name.valid ) {
 					name = ast_strdupa(S_COR(ii->owner->caller.id.name.valid, ii->owner->caller.id.name.str, ""));
 					namelength = strlen(name);

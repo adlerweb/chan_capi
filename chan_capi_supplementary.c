@@ -400,9 +400,31 @@ static void	ccbsnr_remote_user_free(_cmsg *CMSG, char type, unsigned int PLCI, _
 	c->type = "CCBS/CCNR";
 #endif
 
+#ifdef CC_AST_HAS_VERSION_11_0
+	ast_channel_priority_set(c, ccbsnr->priority);
+
+
+  /*! \todo verify if necessary/complete */
+	struct ast_party_connected_line temp_calnum_store;
+	struct ast_party_connected_line *temp_calnum;
+	temp_calnum = &temp_calnum_store;
+	temp_calnum = ast_channel_connected(c);
+	temp_calnum->id.number.valid = 1;
+	ast_free (temp_calnum->id.number.str);
+	temp_calnum->id.number.str = ast_strdup(handlename);
+	ast_channel_connected_set(c, temp_calnum);
+
+	struct ast_party_dialed temp_dialnum_store;
+	struct ast_party_dialed *temp_dialnum;
+	temp_dialnum = &temp_dialnum_store;
+	temp_dialnum = ast_channel_dialed(c);
+	ast_free (temp_dialnum->number.str);
+	temp_dialnum->number.str = ast_strdup(ccbsnr->exten);
+	ast_channel_dialed_set(c, temp_dialnum);
+#elif defined CC_AST_HAS_VERSION_1_8
 	c->priority = ccbsnr->priority;
 
-#ifdef CC_AST_HAS_VERSION_1_8
+
   /*! \todo verify if necessary/complete */
 	c->connected.id.number.valid = 1;
 	ast_free (c->connected.id.number.str);
@@ -411,6 +433,9 @@ static void	ccbsnr_remote_user_free(_cmsg *CMSG, char type, unsigned int PLCI, _
 	ast_free (c->dialed.number.str);
 	c->dialed.number.str = ast_strdup (ccbsnr->exten);
 #else
+	c->priority = ccbsnr->priority;
+
+
 	if (c->cid.cid_num) {
 		ast_free(c->cid.cid_num);
 	}

@@ -111,7 +111,7 @@ endif
 
 CFLAGS=-pipe -fPIC -Wall -Wmissing-prototypes -Wmissing-declarations $(DEBUG) $(INCLUDE) -D_REENTRANT -D_GNU_SOURCE
 CFLAGS+=$(OPTIMIZE)
-CFLAGS+=-Wno-unused-but-set-variable
+CFLAGS+=-Wno-unused-but-set-variable -Wno-unused-function
 CFLAGS+=-O2
 CFLAGS+=$(shell if $(CC) -march=$(PROC) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; then echo "-march=$(PROC)"; fi)
 CFLAGS+=$(shell if uname -m | grep -q "ppc\|arm\|s390"; then echo "-fsigned-char"; fi)
