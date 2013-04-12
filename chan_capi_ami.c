@@ -97,34 +97,34 @@ static char mandescr_capicommand[] =
 void pbx_capi_ami_register(void)
 {
 	capiChatListRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATLIST,
-																								EVENT_FLAG_REPORTING,
-																								pbx_capi_ami_capichat_list,
-																								"List participants in a conference",
-																								mandescr_capichatlist) == 0;
+		EVENT_FLAG_REPORTING,
+		pbx_capi_ami_capichat_list,
+		"List participants in a conference",
+		mandescr_capichatlist) == 0;
 
 	capiChatMuteRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATMUTE,
-																								EVENT_FLAG_CALL,
-																								pbx_capi_ami_capichat_mute,
-																								"Mute a conference user",
-																								mandescr_capichatmute) == 0;
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_mute,
+		"Mute a conference user",
+		mandescr_capichatmute) == 0;
 
 	capiChatUnmuteRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATUNMUTE,
-																								EVENT_FLAG_CALL,
-																								pbx_capi_ami_capichat_unmute,
-																								"Unmute a conference user",
-																								mandescr_capichatunmute) == 0;
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_unmute,
+		"Unmute a conference user",
+		mandescr_capichatunmute) == 0;
 
 	capiChatRemoveRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATREMOVE,
-																								EVENT_FLAG_CALL,
-																								pbx_capi_ami_capichat_remove,
-																								"Remove a conference user",
-																								mandescr_capichatremove) == 0;
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capichat_remove,
+		"Remove a conference user",
+		mandescr_capichatremove) == 0;
 
 	capiCommandRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CAPICOMMAND,
-																								EVENT_FLAG_CALL,
-																								pbx_capi_ami_capicommand,
-																								"Exec capicommand",
-																								mandescr_capicommand) == 0;
+		EVENT_FLAG_CALL,
+		pbx_capi_ami_capicommand,
+		"Exec capicommand",
+		mandescr_capicommand) == 0;
 }
 
 void pbx_capi_ami_unregister(void)
@@ -409,8 +409,8 @@ void pbx_capi_chat_join_event(struct ast_channel* c, const struct capichat_s * r
 }
 
 void pbx_capi_chat_leave_event(struct ast_channel* c,
-															 const struct capichat_s *room,
-															 long duration)
+	const struct capichat_s *room,
+	long duration)
 {
 #ifdef CC_AST_HAS_VERSION_1_8
 	ast_manager_event(c,
