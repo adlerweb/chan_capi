@@ -61,6 +61,10 @@ struct _diva_streaming_vector* vind;
 #include "chan_capi_devstate.h"
 #include "divaverbose.h"
 
+#ifdef CC_AST_HAS_VERSION_11_0
+	#warning Support for Asterisk 11 is highly experimental. Use at your own risk.
+#endif
+
 /* #define CC_VERSION "x.y.z" */
 #define CC_VERSION "$Revision: 956 $"
 
