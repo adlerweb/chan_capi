@@ -143,6 +143,10 @@ LOCAL_USER_DECL;
 
 static int usecnt;
 
+#ifdef CC_AST_HAS_VERSION_1_4
+struct ast_module *myself;
+#endif
+
 /*
  * LOCKING RULES
  * =============
@@ -1231,6 +1235,9 @@ static void interface_cleanup(struct capi_pvt *i)
 
 	i->peer = NULL;	
 	i->owner = NULL;
+#ifdef CC_AST_HAS_VERSION_1_4
+	ast_module_unref(myself);
+#endif
 	i->used = NULL;
 	i->reserved = 0;
 
@@ -1512,7 +1519,7 @@ static void pbx_capi_call_build_calling_party_number(
 	} else {
 		memset(callerid, 0, sizeof(callerid));
 	}
-#else
+#else /* !(defined(CC_AST_HAS_VERSION_11_0) || defined(CC_AST_HAS_VERSION_1_8)) */
 	CLIR = c->cid.cid_pres;
 	callernplan = c->cid.cid_ton & 0x7f;
 
@@ -1521,7 +1528,7 @@ static void pbx_capi_call_build_calling_party_number(
 	} else {
 		memset(callerid, 0, sizeof(callerid));
 	}
-#endif
+#endif /* defined(CC_AST_HAS_VERSION_11_0) || defined(CC_AST_HAS_VERSION_1_8) */
 
 	if (use_defaultcid) {
 		cc_copy_string(callerid, i->defaultcid, sizeof(callerid));
@@ -2644,6 +2651,7 @@ static struct ast_channel *capi_new(struct capi_pvt *i, int state, const char *l
 #ifdef CC_AST_HAS_VERSION_1_4
 	ast_atomic_fetchadd_int(&usecnt, 1);
 	ast_jb_configure(tmp, &i->jbconf);
+	ast_module_ref(myself);
 #else
 	cc_mutex_lock(&usecnt_lock);
 	usecnt++;
@@ -2669,9 +2677,12 @@ pbx_capi_request(const char *type, format_t format, const struct ast_channel *re
 #elif !defined(CC_AST_HAS_VERSION_10_0) /* } { */
 static struct ast_channel *
 pbx_capi_request(const char *type, int format, const struct ast_channel *requestor, void *data, int *cause)
-#else /* } { */
+#elif !defined(CC_AST_HAS_VERSION_11_0) /* } { */
 static struct ast_channel *
 pbx_capi_request(const char *type, struct ast_format_cap *format, const struct ast_channel *requestor, void *data, int *cause)
+#else /* } { */
+static struct ast_channel *
+pbx_capi_request(const char *type, struct ast_format_cap *format, const struct ast_channel *requestor, const char *data, int *cause)
 #endif /* } */
 
 #else /* } { */
@@ -6292,6 +6303,12 @@ static int pbx_capi_call_deflect(struct ast_channel *c, char *param)
 	int numberlen;
 	char facnumber[DEFLECT_NUMBER_MAX_LEN + 4];
 
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
+
 	if (!param) {
 		cc_log(LOG_WARNING, CC_MESSAGE_NAME
 			" deflection requires an argument (destination phone number)\n");
@@ -6381,6 +6398,12 @@ static int pbx_capi_peer_link(struct ast_channel *c, char *param)
 {
 	char buffer[32];
 	int id;
+
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
 
 	id = cc_add_peer_link_id(c);
 
@@ -6501,6 +6524,12 @@ static int pbx_capi_ect(struct ast_channel *c, char *param)
 	unsigned int ectplci;
 	char *holdid;
 	int explicit_peer_plci = 0;
+
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
 
 	if ((id = pbx_builtin_getvar_helper(c, "CALLERHOLDID"))) {
 		plci = (unsigned int)strtoul(id, NULL, 0);
@@ -7629,6 +7658,12 @@ static int pbx_capi_3pty_begin(struct ast_channel *c, char *param)
 	const char	*id;
 	unsigned int	plci = 0;
 
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
+
 	if ((id = pbx_builtin_getvar_helper(c, "CALLERHOLDID"))) {
 		plci = (unsigned int)strtoul(id, NULL, 0);
 	}
@@ -7763,11 +7798,11 @@ static struct capicommands_s {
 	{ "resource",         pbx_capi_chat_associate_resource_plci, 0, 0, 0 },
 	{ "mwi",          pbx_capi_mwi,             1, 0, 0 },
 	{ "hangup",       pbx_capi_realhangup,      0, 0, 0 },
- 	{ "qsig_ssct",	  pbx_capi_qsig_ssct,	    1, 0, 0 },
-  	{ "qsig_ct",      pbx_capi_qsig_ct,         1, 0, 0 },
-   	{ "qsig_callmark",pbx_capi_qsig_callmark,   1, 0, 0 },
+	{ "qsig_ssct",	  pbx_capi_qsig_ssct,	    1, 0, 0 },
+	{ "qsig_ct",      pbx_capi_qsig_ct,         1, 0, 0 },
+	{ "qsig_callmark",pbx_capi_qsig_callmark,   1, 0, 0 },
 	{ "qsig_getplci", pbx_capi_qsig_getplci,    1, 0, 0 },
-  	{ NULL, NULL, 0 }
+	{ NULL, NULL, 0 }
 };
 
 pbx_capi_command_proc_t pbx_capi_lockup_command_by_name(const char* name)
@@ -8050,7 +8085,11 @@ static int pbx_capi_indicate(struct ast_channel *c, int condition)
 /*
  * PBX wants to know the state for a specific device
  */
+#ifdef CC_AST_HAS_VERSION_11_0
+static int pbx_capi_devicestate(const char *data)
+#else /* !defined(CC_AST_HAS_VERSIOM_11_0) */
 static int pbx_capi_devicestate(void *data)
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
 {
 	char *s;
 	char *target;
@@ -9310,6 +9349,10 @@ int load_module(void)
 	}
 #endif
 
+#ifdef CC_AST_HAS_VERSION_1_4
+	myself = ast_module_info->self;
+#endif
+
 	diva_verbose_load();
 
 #ifdef CC_AST_HAS_VERSION_1_6
@@ -9373,7 +9416,7 @@ int load_module(void)
 	}
 
 	pbx_capi_cli_register();
-	pbx_capi_ami_register();
+	pbx_capi_ami_register(myself);
 	pbx_capi_register_device_state_providers();
 	pbx_capi_chat_init_module();
 	

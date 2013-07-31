@@ -206,7 +206,7 @@ static struct capichat_s* update_capi_mixer_part(
 			if (overall_found == 1) {
 				/* only one left, enable DATA_B3 too */
 				if (ii_last->line_plci == 0) {
-	        if (ii_last->channeltype != CAPI_CHANNELTYPE_NULL) {
+		if (ii_last->channeltype != CAPI_CHANNELTYPE_NULL) {
 						p_list[5] |= 0x0c;
 					} else {
 						p_list[5] |= 0x30;

@@ -173,6 +173,7 @@ struct capi_pvt *capi_mknullif(struct ast_channel *c, unsigned long long control
 	int channelcount = 0xffff;
 	int maxcontr = (CAPI_MAX_CONTROLLERS > (sizeof(controllermask)*8)) ?
 		(sizeof(controllermask)*8) : CAPI_MAX_CONTROLLERS;
+	char *cur_chan_name;
 
 	cc_verbose(3, 1, VERBOSE_PREFIX_4 "capi_mknullif: find controller for mask 0x%lx\n",
 		controllermask);
@@ -1325,6 +1326,7 @@ struct ast_channel *cc_get_peer_link_id(const char *p)
 {
 	int id = -1;
 	struct ast_channel *chan = NULL;
+	char *cur_name = "unlinked";
 
 	if (p) {
 		id = (int)strtol(p, NULL, 0);

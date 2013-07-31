@@ -244,6 +244,11 @@ static int pbx_capi_ami_capichat_list(struct mansession *s, const struct message
 			}
 
 			total++;
+#ifdef CC_AST_HAS_VERSION_11_0
+			const char *cur_name = ast_channel_name(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+			const char *cur_name = c->name;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
 			astman_append(s,
 				"Event: "CC_AMI_ACTION_NAME_CHATLIST"\r\n"
 				"%s"
@@ -423,7 +428,7 @@ static int pbx_capi_ami_capicommand(struct mansession *s, const struct message *
 }
 
 #else
-void pbx_capi_ami_register(void)
+void pbx_capi_ami_register(struct ast_module *myself)
 {
 }
 void pbx_capi_ami_unregister(void)
@@ -433,6 +438,14 @@ void pbx_capi_ami_unregister(void)
 
 void pbx_capi_chat_join_event(struct ast_channel* c, const struct capichat_s * room)
 {
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+	const char *cur_uniqid = ast_channel_uniqueid(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+	const char *cur_uniqid = c->uniqueid;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
+
 #ifdef CC_AST_HAS_VERSION_1_8
 	ast_manager_event(c,
 #else
@@ -460,6 +473,14 @@ void pbx_capi_chat_leave_event(struct ast_channel* c,
 	const struct capichat_s *room,
 	long duration)
 {
+#ifdef CC_AST_HAS_VERSION_11_0
+	const char *cur_name = ast_channel_name(c);
+	const char *cur_uniqid = ast_channel_uniqueid(c);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
+	const char *cur_name = c->name;
+	const char *cur_uniqid = c->uniqueid;
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
+
 #ifdef CC_AST_HAS_VERSION_1_8
 	ast_manager_event(c,
 #else

@@ -96,9 +96,15 @@ void cc_qsig_op_ecma_isdn_namepres(struct cc_qsig_invokedata *invoke, struct cap
 					ast_set_callerid(i->owner, NULL, callername, NULL);
 					Use code from ast_set_callerid but do not update CDR
 					*/
+#ifdef CC_AST_HAS_VERSION_11_0
+				ast_channel_caller(i->owner)->id.name.valid = 1;
+				ast_free(ast_channel_caller(i->owner)->id.name.str);
+				ast_channel_caller(i->owner)->id.name.str = ast_strdup(callername);
+#else /* !defined(CC_AST_HAS_VERSION_11_0) */
 				i->owner->caller.id.name.valid = 1;
 				ast_free(i->owner->caller.id.name.str);
 				i->owner->caller.id.name.str = ast_strdup(callername);
+#endif /* defined(CC_AST_HAS_VERSION_11_0) */
 #else
 			i->owner->cid.cid_name = ast_strdup(callername);	/* Save name to callerid */
 #endif

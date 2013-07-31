@@ -445,7 +445,7 @@ static void	ccbsnr_remote_user_free(_cmsg *CMSG, char type, unsigned int PLCI, _
 		ast_free(c->cid.cid_dnid);
 	}
 	c->cid.cid_dnid = ast_strdup(ccbsnr->exten);
-#endif
+#endif /* defined(CC_AST_HAS_VERSION_11_0) || defined(CC_AST_HAS_VERSION_1_8) */
 
 #ifndef CC_AST_HAS_EXT2_CHAN_ALLOC
 	cc_copy_string(c->context, ccbsnr->context, sizeof(c->context));
@@ -650,7 +650,7 @@ int handle_facility_indication_supplementary(
 			cc_verbose(4, 0, VERBOSE_PREFIX_4 "CAPI%u Rx MWI %s for '%s@CAPI_Remote %s %s time '%s' %d messages ref %d service %d\n",
 								PLCI & 0xff,
 								messageStatus == 0 ? "add" : "del", mailboxName, controllingUserNumberName, controllingUserProvidedNumberName,
-                mwiTimeName, numberOfMessages, messageReference, basicService);
+		mwiTimeName, numberOfMessages, messageReference, basicService);
 			if (messageStatus == 0 && mailboxName[0] != 0) {
 #if defined(CC_AST_HAS_EVENT_MWI)
 				struct ast_event *event;
