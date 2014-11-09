@@ -96,7 +96,7 @@ static char mandescr_capicommand[] =
 "    *Capicommand: <capicommand>\n";
 
 #ifdef CC_AST_HAS_VERSION_11_0
-void pbx_capi_ami_register(struct ast_module *myself)
+void pbx_capi_ami_register(struct ast_module *module)
 {
 
 	capiChatListRegistered = ast_manager_register2(CC_AMI_ACTION_NAME_CHATLIST,
